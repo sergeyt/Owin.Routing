@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Test;Deploy;Zip;Pack">
+	<!--
+	References:
+		http://msdn.microsoft.com/en-us/library/vstudio/dd393574.aspx
+		http://msdn.microsoft.com/en-us/library/vstudio/ms164313.aspx
+	-->
+	<Import Project="zipfile.targets" />
+	<Import Project="MSBuild.Community.Tasks.targets" />
+
+	<UsingTask TaskName="Microsoft.Build.Tasks.XmlPoke" AssemblyName="Microsoft.Build.Tasks.v4.0, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"/>
+
+	<PropertyGroup>
+		<Product>Owin.Routing</Product>
+		<RootDir>$(MSBuildProjectDirectory)\..</RootDir>
+		<SrcDir>$(RootDir)\src</SrcDir>
+		<DeployDir>$(RootDir)\.artifacts</DeployDir>
+		<!-- TODO read from CommonAssemblyInfo.cs -->
+		<ProductVersion>0.1.0.0</ProductVersion>
+		<Configuration>release</Configuration>
+		<OutDir>$(SrcDir)\bin\$(Configuration)</OutDir>
+		<TestOutDir>$(SrcDir)\bin\ReleaseTest</TestOutDir>
+		<DeployZipFileName>$(Product)-$(Configuration)-v$(ProductVersion).zip</DeployZipFileName>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Projects Include="$(SrcDir)\$(Product)\$(Product).csproj"/>
+		<Projects Include="$(SrcDir)\Tests\Tests.csproj"/>
+	</ItemGroup>
+
+	<Target Name="Clean">
+		<RemoveDir Directories="$(OutDir)" />
+	</Target>
+
+	<Target Name="Build">
+		<Message Text="Building configuration: $(Configuration)" />
+		<MSBuild
+			Projects="%(Projects.FullPath)"
+			Properties="Configuration=$(Configuration);Platform=AnyCPU;ApplicationVersion=$(ProductVersion);SolutionDir=$(RootDir);OutputPath=$(OutDir)"
+			Targets="Rebuild"
+		/>
+	</Target>
+
+	<Target Name="Test" DependsOnTargets="Build">
+		<PropertyGroup>
+			<NUnitResultsFile>$(OutDir)\nunit-result.xml</NUnitResultsFile>
+			<NUnitToolPath>$(RootDir)\packages\NUnit.Runners.2.6.3\tools</NUnitToolPath>
+		</PropertyGroup>
+
+		<ItemGroup>
+			<TestAssemblies Include="$(OutDir)\Tests.dll"/>
+		</ItemGroup>
+
+		<CallTarget Targets="_InstallNUnitConsole" Condition="!Exists('$(NUnitToolPath)')"/>
+
+		<NUnit ToolPath="$(NUnitToolPath)"
+			   WorkingDirectory="$(OutDir)"
+			   DisableShadowCopy="true"
+			   OutputXmlFile="$(NUnitResultsFile)"
+			   ErrorOutputFile="$(OutDir)\nunit.log"
+			   Assemblies="@(TestAssemblies)"/>
+	</Target>
+
+	<Target Name="_InstallNUnitConsole">
+		<PropertyGroup>
+			<NuGetExePath>$(RootDir)\.nuget\NuGet.exe</NuGetExePath>
+			<NUnitToolPath>$(RootDir)\packages\NUnit.Runners.2.6.3\tools</NUnitToolPath>
+		</PropertyGroup>
+
+		<Exec WorkingDirectory="$(RootDir)"
+			  Command="$(NuGetExePath) install NUnit.Runners -Version 2.6.3 -OutputDirectory packages"/>
+
+		<ItemGroup>
+			<ConfigFiles Include="$(MSBuildProjectDirectory)\nunit-console.exe.config"/>
+		</ItemGroup>
+		
+		<Copy SourceFiles="@(ConfigFiles)"
+			  DestinationFolder="$(NUnitToolPath)"
+			  OverwriteReadOnlyFiles="true"/>
+	</Target>
+
+	<Target Name="Deploy" DependsOnTargets="Build">
+		<RemoveDir Directories="$(DeployDir)" />
+		<MakeDir Directories="$(DeployDir)" />
+
+		<ItemGroup>
+			<Artifacts Include="$(OutDir)\$(Product)*.dll"/>
+			<Artifacts Include="$(OutDir)\$(Product)*.pdb"/>
+			<Artifacts Include="$(OutDir)\$(Product)*.config"/>
+			<Artifacts Include="$(OutDir)\$(Product)*.xml"/>
+		</ItemGroup>
+
+		<PropertyGroup>
+			<TargetDir>$(DeployDir)\$(Product)</TargetDir>
+		</PropertyGroup>
+
+		<Copy SourceFiles="%(Artifacts.FullPath)" DestinationFolder="$(TargetDir)"/>
+	</Target>
+
+	<Target Name="Zip" DependsOnTargets="Deploy">
+		<ItemGroup>
+			<ArtifactDirs Include="$(DeployDir)\$(Product)"/>
+		</ItemGroup>
+
+		<ZipFile
+			BaseDir="$(DeployDir)"
+			Files="@(ArtifactDirs)"
+			ZipFileName="$(DeployDir)\$(DeployZipFileName)"
+		/>
+	</Target>
+
+	<Target Name="Pack" DependsOnTargets="Deploy">
+		<PropertyGroup>
+			<NuGetExePath>$(RootDir)\.nuget\NuGet.exe</NuGetExePath>
+		</PropertyGroup>
+
+		<ItemGroup>
+			<NuSpecs Include="$(RootDir)\.nuspecs\*.nuspec"/>
+		</ItemGroup>
+
+		<Exec WorkingDirectory="$(RootDir)"
+			  Command="$(NuGetExePath) pack %(NuSpecs.FullPath) -OutputDirectory $(DeployDir)"/>
+	</Target>
+</Project>
