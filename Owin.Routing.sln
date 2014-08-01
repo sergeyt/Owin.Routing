@@ -17,12 +17,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuspecs", ".nuspecs", "{34
 		.nuspecs\Owin.Routing.nuspec = .nuspecs\Owin.Routing.nuspec
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{943A620B-A6FC-4592-B016-0EEA4C54BA38}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".build", ".build", "{943A620B-A6FC-4592-B016-0EEA4C54BA38}"
 	ProjectSection(SolutionItems) = preProject
 		.build\main.msbuild = .build\main.msbuild
 		.build\MSBuild.Community.Tasks.targets = .build\MSBuild.Community.Tasks.targets
 		.build\nunit-console.exe.config = .build\nunit-console.exe.config
 		.build\zipfile.targets = .build\zipfile.targets
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D3A625E0-24A5-4413-AFAA-B6229B3C7E21}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
 	EndProjectSection
 EndProject
 Global
