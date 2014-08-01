@@ -7,7 +7,7 @@ namespace Owin.Routing
 	/// <summary>
 	/// <see cref="IAppBuilder"/> extensions.
 	/// </summary>
-	internal static class AppBuilderExtensions
+	public static class AppBuilderExtensions
 	{
 		private const string KeyRoutes = "app.routes";
 
@@ -25,7 +25,7 @@ namespace Owin.Routing
 					var data = app.ResolveRoute(ctx);
 					if (data != null && data.RouteHandler is RouteBuilder)
 					{
-						await ((RouteBuilder) data.RouteHandler).Process(ctx, data, next);
+						await ((RouteBuilder) data.RouteHandler).Invoke(ctx, data, next);
 					}
 					else
 					{

@@ -18,9 +18,11 @@ namespace Owin.Routing
 		private readonly IDictionary<string, HandlerFunc> _verbs =
 			new ConcurrentDictionary<string, HandlerFunc>(StringComparer.OrdinalIgnoreCase);
 
-		internal RouteBuilder(){}
+		internal RouteBuilder()
+		{
+		}
 
-		internal async Task Process(IOwinContext context, RouteData data, Func<Task> next)
+		internal async Task Invoke(IOwinContext context, RouteData data, Func<Task> next)
 		{
 			HandlerFunc handler;
 			if (_verbs.TryGetValue(context.Request.Method, out handler))
