@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Owin.Testing;
+using Moq;
 using NUnit.Framework;
+using Owin;
 using Owin.Routing;
 
 namespace Tests
@@ -35,6 +38,14 @@ namespace Tests
 				var s = await response.Content.ReadAsStringAsync();
 				return s;
 			}
+		}
+
+		[Test]
+		public void ShouldReturnSameRouteBuilder()
+		{
+			var app = new Mock<IAppBuilder>();
+			app.Setup(x => x.Properties).Returns(new Dictionary<string, object>());
+			Assert.AreSame(app.Object.Route("a"), app.Object.Route("a"));
 		}
     }
 }

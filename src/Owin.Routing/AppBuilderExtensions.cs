@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Web.Routing;
 using Microsoft.Owin;
 
@@ -11,8 +13,16 @@ namespace Owin.Routing
 	{
 		private const string KeyRoutes = "app.routes";
 
+		/// <summary>
+		/// Gets <see cref="RouteBuilder"/> for given route.
+		/// </summary>
+		/// <param name="app">The instance of <see cref="IAppBuilder"/>.</param>
+		/// <param name="route">The route url.</param>
 		public static RouteBuilder Route(this IAppBuilder app, string route)
 		{
+			if (app == null) throw new ArgumentNullException("app");
+			if (string.IsNullOrEmpty(route)) throw new ArgumentNullException("route");
+
 			var routes = app.Properties.Get<RouteCollection>(KeyRoutes);
 
 			if (routes == null)
@@ -34,10 +44,14 @@ namespace Owin.Routing
 				});
 			}
 
+			var existing = routes.OfType<Route>().FirstOrDefault(r => string.Equals(r.Url, route, StringComparison.InvariantCultureIgnoreCase));
+			if (existing != null)
+			{
+				return (RouteBuilder) existing.RouteHandler;
+			}
+
 			var builder = new RouteBuilder();
-
 			routes.Add(new Route(route, builder));
-
 			return builder;
 		}
 
