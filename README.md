@@ -34,26 +34,31 @@ RouteBuilder methods:
 Below is block of test code.
 
 ```c#
-using (var server = TestServer.Create(app =>
+[TestCase("/docs/reports", Result = "reports")]
+[TestCase("/docs/reports/1", Result = "reports[1]")]
+public async Task<string> Test(string path)
 {
-	app.Route("docs/{collection}")
-		.Get(async (ctx, data) =>
-		{
-			var name = Convert.ToString(data.Values["collection"]);
-			await ctx.Response.WriteAsync(name);
-		});
+	using (var server = TestServer.Create(app =>
+	{
+		app.Route("docs/{collection}")
+			.Get(async (ctx, data) =>
+			{
+				var name = Convert.ToString(data.Values["collection"]);
+				await ctx.Response.WriteAsync(name);
+			});
 
-	app.Route("docs/{collection}/{id}")
-		.Get(async (ctx, data) =>
-		{
-			var col = Convert.ToString(data.Values["collection"]);
-			var id = Convert.ToString(data.Values["id"]);
-			await ctx.Response.WriteAsync(string.Format("{0}[{1}]", col, id));
-		});
-}))
-{
-	var response = await server.HttpClient.GetAsync(path);
-	var s = await response.Content.ReadAsStringAsync();
-	return s;
+		app.Route("docs/{collection}/{id}")
+			.Get(async (ctx, data) =>
+			{
+				var col = Convert.ToString(data.Values["collection"]);
+				var id = Convert.ToString(data.Values["id"]);
+				await ctx.Response.WriteAsync(string.Format("{0}[{1}]", col, id));
+			});
+	}))
+	{
+		var response = await server.HttpClient.GetAsync(path);
+		var s = await response.Content.ReadAsStringAsync();
+		return s;
+	}
 }
 ```
