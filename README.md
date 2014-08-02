@@ -29,7 +29,7 @@ RouteBuilder methods:
 * `RouteBuilder Patch(HandlerFunc handler)` - set PATCH handler.
 * `RouteBuilder Delete(HandlerFunc handler)` - set DELETE handler.
 
-## Samples code
+## Sample code
 
 Below is block of test code.
 

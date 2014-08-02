@@ -15,7 +15,7 @@ namespace Owin.Routing
 	public static class AppBuilderExtensions
 	{
 		/// <summary>
-		/// Gets <see cref="RouteBuilder"/> for given route.
+		/// Injects route to app pipeline.
 		/// </summary>
 		/// <param name="app">The instance of <see cref="IAppBuilder"/>.</param>
 		/// <param name="route">The url pattern.</param>

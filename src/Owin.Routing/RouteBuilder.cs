@@ -37,8 +37,18 @@ namespace Owin.Routing
 
 		private RouteBuilder Register(string method, HandlerFunc handler)
 		{
-			if (handler == null) throw new ArgumentNullException("handler");
+			if (handler == null)
+			{
+				throw new ArgumentNullException("handler");
+			}
+
+			if (_verbs.ContainsKey(method))
+			{
+				throw new ArgumentException(string.Format("Handler for {0} is already set.", method));
+			}
+
 			_verbs[method] = handler;
+
 			return this;
 		}
 

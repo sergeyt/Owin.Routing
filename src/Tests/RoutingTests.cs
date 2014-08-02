@@ -47,5 +47,19 @@ namespace Tests
 			app.Setup(x => x.Properties).Returns(new Dictionary<string, object>());
 			Assert.AreSame(app.Object.Route("a"), app.Object.Route("a"));
 		}
+
+		[Test]
+		public void ShouldThrowOnRegisteringFewHandlersForSameVerb()
+		{
+			var app = new Mock<IAppBuilder>();
+			app.Setup(x => x.Properties).Returns(new Dictionary<string, object>());
+
+			Assert.Throws<ArgumentException>(() =>
+			{
+				app.Object.Route("a")
+					.Get(async (context, data) => { })
+					.Get(async (context, data) => { });
+			});
+		}
     }
 }
