@@ -13,9 +13,10 @@
 		<tags>owin routing</tags>
 		<dependencies>
 			<dependency id="Microsoft.Owin" version="2.1.0"/>
+			<dependency id="Owin" version="1.0"/>
 		</dependencies>
 	</metadata>
 	<files>
-		<file src="..\.artifacts\Owin.Routing\Owin.Routing.dll" target="lib/net45"/>
+		<file src="..\.artifacts\Owin.Routing\Owin.Routing.dll" target="lib\net45"/>
 	</files>
 </package>

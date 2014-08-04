@@ -118,7 +118,6 @@
 			<NuSpecs Include="$(RootDir)\.nuspecs\*.nuspec"/>
 		</ItemGroup>
 
-		<Exec WorkingDirectory="$(RootDir)"
-			  Command="$(NuGetExePath) pack %(NuSpecs.FullPath) -OutputDirectory $(DeployDir)"/>
+		<Exec WorkingDirectory="$(DeployDir)" Command="$(NuGetExePath) pack %(NuSpecs.FullPath) -NoDefaultExcludes"/>
 	</Target>
 </Project>
