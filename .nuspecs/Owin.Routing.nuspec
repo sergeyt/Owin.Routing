@@ -2,7 +2,7 @@
 <package>
 	<metadata>
 		<id>Owin.Routing</id>
-		<version>0.2.0.0</version>
+		<version>0.3.0.0</version>
 		<authors>Sergey Todyshev (stodyshev@gmail.com)</authors>
 		<owners>TsvBits</owners>
 		<licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>

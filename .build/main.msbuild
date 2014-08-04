@@ -16,7 +16,7 @@
 		<SrcDir>$(RootDir)\src</SrcDir>
 		<DeployDir>$(RootDir)\.artifacts</DeployDir>
 		<!-- TODO read from CommonAssemblyInfo.cs -->
-		<ProductVersion>0.2.0.0</ProductVersion>
+		<ProductVersion>0.3.0.0</ProductVersion>
 		<Configuration>release</Configuration>
 		<OutDir>$(SrcDir)\bin\$(Configuration)</OutDir>
 		<TestOutDir>$(SrcDir)\bin\ReleaseTest</TestOutDir>
