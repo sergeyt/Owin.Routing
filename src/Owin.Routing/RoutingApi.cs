@@ -10,9 +10,9 @@ namespace Owin.Routing
 	using HandlerFunc = Func<IOwinContext, RouteData, Task>;
 
 	/// <summary>
-	/// <see cref="IAppBuilder"/> extensions.
+	/// Provides basic routing API.
 	/// </summary>
-	public static class AppBuilderExtensions
+	public static class RoutingApi
 	{
 		/// <summary>
 		/// Injects route to app pipeline.

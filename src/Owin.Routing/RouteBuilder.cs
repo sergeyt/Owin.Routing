@@ -35,7 +35,7 @@ namespace Owin.Routing
 			}
 		}
 
-		private RouteBuilder Register(string method, HandlerFunc handler)
+		internal RouteBuilder Register(string method, HandlerFunc handler)
 		{
 			if (handler == null)
 			{
