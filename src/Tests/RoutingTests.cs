@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Owin.Testing;
 using Moq;
@@ -35,8 +36,42 @@ namespace Tests
 			}))
 			{
 				var response = await server.HttpClient.GetAsync(path);
-				var s = await response.Content.ReadAsStringAsync();
-				return s;
+				return await response.Content.ReadAsStringAsync();
+			}
+		}
+
+		[TestCase("GET", "/docs/tags/1", Result = "generic:tags[1]")]
+		[TestCase("POST", "/docs/tags/1", Result = "specific:tags[1]")]
+		public async Task<string> FromSpecificToGeneral(string method, string path)
+		{
+			using (var server = TestServer.Create(app =>
+			{
+				app.Route("docs/tags/{id}")
+					.Post(async (ctx, data) =>
+					{
+						var id = Convert.ToString(data.Values["id"]);
+						await ctx.Response.WriteAsync(string.Format("specific:tags[{0}]", id));
+					});
+
+				app.Route("docs/{collection}/{id}")
+					.Get(async (ctx, data) =>
+					{
+						var col = Convert.ToString(data.Values["collection"]);
+						var id = Convert.ToString(data.Values["id"]);
+						await ctx.Response.WriteAsync(string.Format("generic:{0}[{1}]", col, id));
+					});
+			}))
+			{
+				if (string.Equals(method, "GET", StringComparison.OrdinalIgnoreCase))
+				{
+					var response = await server.HttpClient.GetAsync(path);
+					return await response.Content.ReadAsStringAsync();
+				}
+				else
+				{
+					var response = await server.HttpClient.PostAsync(path, new StringContent("test"));
+					return await response.Content.ReadAsStringAsync();
+				}
 			}
 		}
 

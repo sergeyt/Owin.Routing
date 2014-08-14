@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
@@ -19,10 +20,24 @@ namespace Owin.Routing
 		}
 	}
 
+	internal static class DictionaryExtensions
+	{
+		public static T Get<T>(this IDictionary<string, object> dictionary, string key) where T : class
+		{
+			object value;
+			return dictionary.TryGetValue(key, out value) ? value.ToType<T>() : null;
+		}
+	}
+
 	internal static class ConvertExtensions
 	{
 		public static object ToType(this object value, Type type)
 		{
+			if (type.IsInstanceOfType(value))
+			{
+				return value;
+			}
+
 			if (type == typeof(Guid))
 			{
 				return new Guid(Convert.ToString(value, CultureInfo.InvariantCulture));

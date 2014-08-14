@@ -22,17 +22,15 @@ namespace Owin.Routing
 		{
 		}
 
-		internal async Task Invoke(IOwinContext context, RouteData data, Func<Task> next)
+		internal bool HasHandler(string verb)
 		{
-			HandlerFunc handler;
-			if (_verbs.TryGetValue(context.Request.Method, out handler))
-			{
-				await handler(context, data);
-			}
-			else
-			{
-				await next();
-			}
+			return _verbs.ContainsKey(verb);
+		}
+
+		internal async Task Invoke(IOwinContext context, RouteData data)
+		{
+			var handler = _verbs[context.Request.Method];
+			await handler(context, data);
 		}
 
 		internal RouteBuilder Register(string method, HandlerFunc handler)
