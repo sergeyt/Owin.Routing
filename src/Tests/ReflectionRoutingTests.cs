@@ -7,6 +7,7 @@ using Owin.Routing;
 
 namespace Tests
 {
+	[Ignore("NotImplemented")]
 	[TestFixture]
 	public class ReflectionRoutingTests
 	{
