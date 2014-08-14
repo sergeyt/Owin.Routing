@@ -20,17 +20,17 @@ namespace Tests
 			using (var server = TestServer.Create(app =>
 			{
 				app.Route("docs/{collection}")
-					.Get(async (ctx, data) =>
+					.Get(async ctx =>
 					{
-						var name = Convert.ToString(data.Values["collection"]);
+						var name = ctx.GetRouteValue("collection");
 						await ctx.Response.WriteAsync(name);
 					});
 
 				app.Route("docs/{collection}/{id}")
-					.Get(async (ctx, data) =>
+					.Get(async ctx =>
 					{
-						var col = Convert.ToString(data.Values["collection"]);
-						var id = Convert.ToString(data.Values["id"]);
+						var col = ctx.GetRouteValue("collection");
+						var id = ctx.GetRouteValue("id");
 						await ctx.Response.WriteAsync(string.Format("{0}[{1}]", col, id));
 					});
 			}))
@@ -47,17 +47,17 @@ namespace Tests
 			using (var server = TestServer.Create(app =>
 			{
 				app.Route("docs/tags/{id}")
-					.Post(async (ctx, data) =>
+					.Post(async ctx =>
 					{
-						var id = Convert.ToString(data.Values["id"]);
+						var id = ctx.GetRouteValue("id");
 						await ctx.Response.WriteAsync(string.Format("specific:tags[{0}]", id));
 					});
 
 				app.Route("docs/{collection}/{id}")
-					.Get(async (ctx, data) =>
+					.Get(async ctx =>
 					{
-						var col = Convert.ToString(data.Values["collection"]);
-						var id = Convert.ToString(data.Values["id"]);
+						var col = ctx.GetRouteValue("collection");
+						var id = ctx.GetRouteValue("id");
 						await ctx.Response.WriteAsync(string.Format("generic:{0}[{1}]", col, id));
 					});
 			}))
@@ -92,8 +92,8 @@ namespace Tests
 			Assert.Throws<ArgumentException>(() =>
 			{
 				app.Object.Route("a")
-					.Get(async (context, data) => { })
-					.Get(async (context, data) => { });
+					.Get(async _ => { })
+					.Get(async _ => { });
 			});
 		}
     }

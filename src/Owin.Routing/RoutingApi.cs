@@ -7,7 +7,13 @@ using Microsoft.Owin;
 
 namespace Owin.Routing
 {
-	using HandlerFunc = Func<IOwinContext, RouteData, Task>;
+	using HandlerFunc = Func<IOwinContext, Task>;
+
+	internal static class Keys
+	{
+		public const string Routes = "app.routes";
+		public const string RouteData = "app.route.data";
+	}
 
 	/// <summary>
 	/// Provides basic routing API.
@@ -24,13 +30,12 @@ namespace Owin.Routing
 			if (app == null) throw new ArgumentNullException("app");
 			if (string.IsNullOrEmpty(url)) throw new ArgumentNullException("url");
 
-			const string keyRoutes = "app.routes";
-			var routes = app.Properties.Get<RouteCollection>(keyRoutes);
+			var routes = app.Properties.Get<RouteCollection>(Keys.Routes);
 
 			if (routes == null)
 			{
 				routes = new RouteCollection();
-				app.Properties[keyRoutes] = routes;
+				app.Properties[Keys.Routes] = routes;
 
 				app.Use(async (ctx, next) =>
 				{
@@ -43,7 +48,8 @@ namespace Owin.Routing
 
 					if (data != null)
 					{
-						await ((RouteBuilder) data.RouteHandler).Invoke(ctx, data);
+						ctx.Set(Keys.RouteData, data);
+						await ((RouteBuilder) data.RouteHandler).Invoke(ctx);
 					}
 					else
 					{
@@ -107,5 +113,21 @@ namespace Owin.Routing
 			app.Route(url).Delete(handler);
 			return app;
 		}
-	}	
+	}
+
+	public static class OwinContextExtensions
+	{
+		public static T GetRouteValue<T>(this IOwinContext context, string name)
+		{
+			var data = context.Get<RouteData>(Keys.RouteData);
+			if (data == null) throw new InvalidOperationException();
+			var val = data.Values[name];
+			return val.ToType<T>();
+		}
+
+		public static string GetRouteValue(this IOwinContext context, string name)
+		{
+			return context.GetRouteValue<string>(name);
+		}
+	}
 }

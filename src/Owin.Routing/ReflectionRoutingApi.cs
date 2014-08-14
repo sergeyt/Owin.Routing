@@ -22,7 +22,7 @@ namespace Owin.Routing
 				{
 					foreach (var verb in attr.Methods)
 					{
-						app.Route(attr.Url).Register(verb, async (context, data) =>
+						app.Route(attr.Url).Register(verb, async (context) =>
 						{
 							// TODO parse args from url template
 							// TODO for POST parse JSON

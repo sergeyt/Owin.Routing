@@ -8,7 +8,7 @@ using Microsoft.Owin;
 
 namespace Owin.Routing
 {
-	using HandlerFunc = Func<IOwinContext, RouteData, Task>;
+	using HandlerFunc = Func<IOwinContext, Task>;
 
 	/// <summary>
 	/// Provides fluent API to register http method handlers.
@@ -27,10 +27,10 @@ namespace Owin.Routing
 			return _verbs.ContainsKey(verb);
 		}
 
-		internal async Task Invoke(IOwinContext context, RouteData data)
+		internal async Task Invoke(IOwinContext context)
 		{
 			var handler = _verbs[context.Request.Method];
-			await handler(context, data);
+			await handler(context);
 		}
 
 		internal RouteBuilder Register(string method, HandlerFunc handler)
