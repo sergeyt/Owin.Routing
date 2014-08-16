@@ -17,16 +17,20 @@ namespace Tests
 			var lm = new Mock<ILicenseManager>();
 			lm.Setup(x => x.GetLicenses())
 				.Returns(new[] {new LicenseInfo {SerialKey = "serialKey", Package = "package", Status = "activated", DaysLeft = 12}});
+			lm.Setup(x => x.GetActivationKey(It.IsAny<string>())).Returns<string>(s => "123");
 
-			using (var server = TestServer.Create(app => app.RegisterRoutes(() => lm.Object)))
+			using (var server = TestServer.Create(app => app.RegisterRoutes(_ => lm.Object)))
 			{
 				var s = await server.HttpClient.GetStringAsync("licenses");
-				Assert.IsNullOrEmpty(s);
+				Assert.AreEqual("[{\"SerialKey\":\"serialKey\",\"Package\":\"package\",\"Status\":\"activated\",\"DaysLeft\":12}]", s);
+
+				s = await server.HttpClient.GetStringAsync("licenses/abc/activationKey");
+				Assert.AreEqual("\"123\"", s);
 			}
 		}
 	}
 
-	internal interface ILicenseManager
+	public interface ILicenseManager
 	{
 		[Route("GET", "licenses")]
 		IEnumerable<LicenseInfo> GetLicenses();
@@ -54,7 +58,7 @@ namespace Tests
 		LicenseInfo GetLicenseInfo(Guid subjectId);
 	}
 
-	internal sealed class LicenseInfo
+	public sealed class LicenseInfo
 	{
 		public string SerialKey { get; set; }
 		public string Package { get; set; }

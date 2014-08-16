@@ -105,7 +105,8 @@ namespace Owin.Routing
 			var callArgs = parameters.Select((p, i) =>
 			{
 				var item = Expression.ArrayIndex(args, Expression.Constant(i));
-				return (Expression) Expression.Convert(item, p.ParameterType);
+				var val = Convert(item, p.ParameterType);
+				return (Expression) Expression.Convert(val, p.ParameterType);
 			});
 
 			if (method.ReturnType == typeof(void))
@@ -125,6 +126,15 @@ namespace Owin.Routing
 				var lambda = Expression.Lambda<Func<object, object[], object>>(call, target, args);
 				return lambda.Compile();
 			}
+		}
+
+		private static MethodInfo _toTypeMethod;
+
+		private static Expression Convert(Expression value, Type type)
+		{
+			var toType = _toTypeMethod ??
+			             (_toTypeMethod = typeof(ConvertExtensions).GetMethod("ToType", new[] {typeof(object), typeof(Type)}));
+			return Expression.Call(toType, value, Expression.Constant(type));
 		}
 	}
 }
