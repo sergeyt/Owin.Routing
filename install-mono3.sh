@@ -1,15 +1,32 @@
 #!/bin/bash
-MONO3_FILENAME="mono-3.0.12-bin.tar.bz2"
-MONO3_BINARY="http://samples.nancyfx.org/content/$MONO3_FILENAME"
 
-apt-get update
-#apt-get upgrade
-apt-get install -y wget
-apt-get install -y build-essential
-apt-get install -y gettext
+# get build tools
+sudo apt-get install git autoconf automake libtool g++ gettext mono-gmcs
+# get dev libs
+sudo apt-get install libglib2.0-dev libpng12-dev libx11-dev
+sudo apt-get install libfreetype6-dev libfontconfig1-dev
+sudo apt-get install libtiff5-dev libjpeg8-dev libgif-dev libexif-dev
 
-echo "Grabbing: $MONO3_BINARY"
-wget -q $MONO3_BINARY
-tar xk -C "/opt" -f $MONO3_FILENAME
-echo export PATH="$PATH:/opt/mono/bin" >> /etc/profile.d/mono.sh
-echo export LD_LIBRARY_PATH="/opt/mono/lib" >> /etc/profile.d/mono.sh
+# clone mono repos
+git clone git://github.com/mono/mono.git
+git clone git://github.com/mono/libgdiplus.git3
+
+# compile and install lidgdiplus
+cd libgdiplus
+./autogen.sh --prefix=/usr/local
+make
+sudo make install
+
+# compile mono
+cd ../mono
+
+# get mono submodules
+git submodule init
+git submodule update --recursive
+
+./autogen.sh --prefix=/usr/local
+make get-monolite-latest
+make EXTERNAL_MCS=${PWD}/mcs/class/lib/monolite/gmcs.exe
+
+# finally install mono
+sudo make install
