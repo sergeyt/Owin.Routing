@@ -26,14 +26,27 @@ namespace Owin.Routing
 				{
 					foreach (var verb in attr.Methods)
 					{
-						app.Route(attr.Url).Register(verb, async ctx =>
+						if (string.Equals(verb, "POST", StringComparison.OrdinalIgnoreCase))
 						{
-							// TODO for POST requests parse args from JSON input
-							var args = sig.Select(p => (object) ctx.GetRouteValue(p.Name)).ToArray();
-							var instance = getInstance(ctx);
-							var result = invoke(instance, args);
-							await ctx.WriteJson(result);
-						});
+							app.Route(attr.Url).Register(verb, async ctx =>
+							{
+								var json = await ctx.ReadJObject();
+								var args = sig.Select(p => json.Value<object>(p.Name)).ToArray();
+								var instance = getInstance(ctx);
+								var result = invoke(instance, args);
+								await ctx.WriteJson(result);
+							});
+						}
+						else
+						{
+							app.Route(attr.Url).Register(verb, async ctx =>
+							{
+								var args = sig.Select(p => (object) ctx.GetRouteValue(p.Name)).ToArray();
+								var instance = getInstance(ctx);
+								var result = invoke(instance, args);
+								await ctx.WriteJson(result);
+							});
+						}
 					}
 				});
 			});
