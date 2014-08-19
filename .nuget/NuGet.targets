@@ -102,7 +102,7 @@
 
         <Exec Command="$(RestoreCommand)"
               LogStandardErrorAsError="true"
-              Condition="'Exists('$(PackagesConfig)')" />
+              Condition="Exists('$(PackagesConfig)')" />
     </Target>
 
     <Target Name="BuildPackage" DependsOnTargets="CheckPrerequisites">
