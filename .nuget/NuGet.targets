@@ -63,7 +63,7 @@
 
         <NugetLog>$(PaddedSolutionDir)\nuget.log</NugetLog>
         <!-- Commands -->
-		<RestoreCommand>$(NuGetCommand) install "$(PackagesConfig)" $(NonInteractiveSwitch) $(RequireConsentSwitch) -solutionDir $(PaddedSolutionDir) &gt; &quot;$(NugetLog)&quot;</RestoreCommand>
+		<RestoreCommand>$(NuGetCommand) install "$(PackagesConfig)" $(NonInteractiveSwitch) $(RequireConsentSwitch) -solutionDir $(PaddedSolutionDir) &gt; $(NugetLog)</RestoreCommand>
 		<!-- <RestoreCommand>$(NuGetCommand) install "$(PackagesConfig)" -source "$(PackageSources)"  $(NonInteractiveSwitch) $(RequireConsentSwitch) -solutionDir $(PaddedSolutionDir)</RestoreCommand> -->
         <BuildCommand>$(NuGetCommand) pack "$(ProjectPath)" -Properties "Configuration=$(Configuration);Platform=$(Platform)" $(NonInteractiveSwitch) -OutputDirectory "$(PackageOutputDir)" -symbols</BuildCommand>
 
@@ -97,6 +97,7 @@
 
     <Target Name="RestorePackages" DependsOnTargets="CheckPrerequisites">        
         <Exec Command="$(RestoreCommand)"
+        	  IgnoreExitCode="true"
               Condition="'$(OS)' != 'Windows_NT' And Exists('$(PackagesConfig)')" />
 
         <Exec Command="$(RestoreCommand)"
