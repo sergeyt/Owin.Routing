@@ -1,2 +1,2 @@
 #!/bin/sh
-mono --runtime=v4.0.30319 ./nuget/NuGet.exe "$@"
+mono --runtime=v4.0.30319 ./.nuget/NuGet.exe "$@"
