@@ -61,8 +61,9 @@
         <PaddedSolutionDir Condition=" '$(OS)' == 'Windows_NT'">"$(SolutionDir) "</PaddedSolutionDir>
         <PaddedSolutionDir Condition=" '$(OS)' != 'Windows_NT' ">"$(SolutionDir)"</PaddedSolutionDir>
 
+        <NugetLog>$(PaddedSolutionDir)\nuget.log</NugetLog>
         <!-- Commands -->
-		<RestoreCommand>$(NuGetCommand) install "$(PackagesConfig)" $(NonInteractiveSwitch) $(RequireConsentSwitch) -solutionDir $(PaddedSolutionDir)</RestoreCommand>
+		<RestoreCommand>$(NuGetCommand) install "$(PackagesConfig)" $(NonInteractiveSwitch) $(RequireConsentSwitch) -solutionDir $(PaddedSolutionDir) &gt; &quot;$(NugetLog)&quot;</RestoreCommand>
 		<!-- <RestoreCommand>$(NuGetCommand) install "$(PackagesConfig)" -source "$(PackageSources)"  $(NonInteractiveSwitch) $(RequireConsentSwitch) -solutionDir $(PaddedSolutionDir)</RestoreCommand> -->
         <BuildCommand>$(NuGetCommand) pack "$(ProjectPath)" -Properties "Configuration=$(Configuration);Platform=$(Platform)" $(NonInteractiveSwitch) -OutputDirectory "$(PackageOutputDir)" -symbols</BuildCommand>
 
@@ -101,6 +102,11 @@
         <Exec Command="$(RestoreCommand)"
               LogStandardErrorAsError="true"
               Condition="'$(OS)' == 'Windows_NT' And Exists('$(PackagesConfig)')" />
+
+        <ReadLinesFromFile File="$(NugetLog)">
+   			<Output TaskParameter="Lines" ItemName="OutputLines"/>
+		</ReadLinesFromFile>
+		<Message Text="@(OutputLines->'%(Identity)', '%0a%0d')" />
     </Target>
 
     <Target Name="BuildPackage" DependsOnTargets="CheckPrerequisites">
