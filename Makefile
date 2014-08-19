@@ -1,6 +1,7 @@
 all: build
 
 build:
+	mozroots --import --sync
 	echo 'get deps'
 	bash nuget install ./src/Owin.Routing/packages.config -solutionDir ./
 	bash nuget install ./src/Tests/packages.config -solutionDir ./
