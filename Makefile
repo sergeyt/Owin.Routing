@@ -2,7 +2,8 @@ all: build
 
 build:
 	echo 'get deps'
-	bash nuget install -solutionDir ./
+	bash nuget install ./src/Owin.Routing/packages.config -solutionDir ./
+	bash nuget install ./src/Tests/packages.config -solutionDir ./
 	echo 'compile bits for testing'
 	mcs /define:NUNIT /out:Owin.Routing.Tests.dll @build.rsp
 	mcs @tests.rsp
