@@ -1,5 +1,4 @@
 [![Build Status](https://drone.io/github.com/sergeyt/Owin.Routing/status.png)](https://drone.io/github.com/sergeyt/Owin.Routing/latest)
-[![Build status](https://ci.appveyor.com/api/projects/status/157su7epxuv23rxj)](https://ci.appveyor.com/project/sergeyt/owin-routing)
 [![NuGet Version](http://img.shields.io/nuget/v/Owin.Routing.svg?style=flat)](https://www.nuget.org/packages/Owin.Routing/)
 [![NuGet Downloads](http://img.shields.io/nuget/dt/Owin.Routing.svg?style=flat)](https://www.nuget.org/packages/Owin.Routing/)
 
