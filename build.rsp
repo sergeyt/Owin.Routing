@@ -1,10 +1,17 @@
 /t:library
 /keyfile:tsv.snk
+/r:System.dll
 /r:System.Xml.dll
 /r:System.Xml.Linq.dll
+/r:System.Web.Abstractions.dll
+/r:System.Web.dll
+/r:System.Web.Routing.dll
+/r:Microsoft.CSharp.dll
 /r:packages/Owin.1.0/lib/net40/Owin.dll
 /r:packages/Microsoft.Owin.2.1.0/lib/net45/Microsoft.Owin.dll
 /r:packages/Newtonsoft.Json.6.0.4/lib/net35/Newtonsoft.Json.dll
+/r:packages/NUnit.2.6.3/lib/nunit.framework.dll
 /o+
 /recurse:./src/Owin.Routing/*.cs
 CommonAssemblyInfo.cs
+

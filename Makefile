@@ -5,10 +5,13 @@ build:
 	echo 'get deps'
 	bash nuget install ./src/Owin.Routing/packages.config -solutionDir ./
 	bash nuget install ./src/Tests/packages.config -solutionDir ./
-	echo 'compile bits for testing'
-	dmcs /define:NUNIT /out:Owin.Routing.Tests.dll @build.rsp
-	dmcs @tests.rsp
-	echo 'run tests'
-	nunit-console Owin.Routing.Tests.dll Tests.dll
+	mkdir -p .out
 	echo 'compile release bits'
-	dmcs /out:Owin.Routing.dll @build.rsp
+	mcs /out:.out/Owin.Routing.dll @build.rsp
+	echo 'compile tesing bits'
+	mcs /define:NUNIT /out:.out/Owin.Routing.Tests.dll @build.rsp
+	mcs /out:.out/Tests.dll @tests.rsp
+	echo 'run tests'
+	cp packages/NUnit.2.6.3/lib/nunit.framework.dll .out/
+	nunit-console .out/Owin.Routing.Tests.dll .out/Tests.dll
+
