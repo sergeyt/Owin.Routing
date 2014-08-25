@@ -5,7 +5,7 @@
 
 # Owin.Routing
 
-.NET library with simple routing inspired by [express.js](http://expressjs.com/)
+.NET library with simple routing API inspired by [express.js](http://expressjs.com/)
 for [Katana](https://katanaproject.codeplex.com/) applications.
 
 Owin.Routing is now based on ASP.NET System.Web.Routing.
