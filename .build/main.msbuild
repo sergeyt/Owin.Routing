@@ -14,7 +14,7 @@
 		<SrcDir>$(RootDir)\src</SrcDir>
 		<DeployDir>$(RootDir)\.out</DeployDir>
 		<!-- TODO read from CommonAssemblyInfo.cs -->
-		<ProductVersion>0.4.1.0</ProductVersion>
+		<ProductVersion>0.5.0.0</ProductVersion>
 		<Configuration>release</Configuration>
 		<TestDefines>TRACE;DEBUG;NUNIT</TestDefines>
 		<OutDir>$(SrcDir)\bin\$(Configuration)</OutDir>
