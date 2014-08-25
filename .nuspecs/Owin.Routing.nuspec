@@ -18,5 +18,6 @@
 	</metadata>
 	<files>
 		<file src="..\.out\Owin.Routing\Owin.Routing.dll" target="lib\net45"/>
+		<file src="..\.out\Owin.Routing\Owin.Routing.xml" target="lib\net45"/>
 	</files>
 </package>
