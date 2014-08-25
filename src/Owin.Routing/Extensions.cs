@@ -43,10 +43,15 @@ namespace Owin.Routing
 				return new Guid(Convert.ToString(value, CultureInfo.InvariantCulture));
 			}
 
+			if (type.IsEnum)
+			{
+				return value.ToEnum(type);
+			}
+
 			var c = value as IConvertible;
 			if (c != null)
 			{
-				return type.IsEnum ? value.ToEnum(type) : Convert.ChangeType(value, type);
+				return Convert.ChangeType(value, type);
 			}
 
 			var converter = TypeDescriptor.GetConverter(type);

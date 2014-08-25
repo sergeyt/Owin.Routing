@@ -1,4 +1,5 @@
 ﻿#if NUNIT
+using System;
 using NUnit.Framework;
 
 namespace Owin.Routing.Tests
@@ -9,11 +10,21 @@ namespace Owin.Routing.Tests
 		[Test]
 		public void TestToType()
 		{
-			// TODO more tests
-			// some stupid tests
+			object nil = null;
+
 			Assert.AreEqual("1", "1".ToType<string>());
 			Assert.AreEqual(1, "1".ToType<int>());
+
+			var guid = Guid.NewGuid();
+			Assert.AreEqual(guid, guid.ToString().ToType<Guid>());
+
+			Assert.AreEqual(ItemKind.Simple, "Simple".ToType<ItemKind>());
+			Assert.AreEqual(ItemKind.Simple, 0.ToType<ItemKind>());
+			Assert.AreEqual(ItemKind.Simple, "0".ToType<ItemKind>());
+			Assert.AreEqual(ItemKind.Simple, nil.ToType<ItemKind>());
 		}
+
+		private enum ItemKind { Simple, Complex }
 	}
 }
 #endif
