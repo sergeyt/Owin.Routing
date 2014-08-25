@@ -15,28 +15,16 @@ namespace Owin.Routing
 			TypeNameHandling = TypeNameHandling.Auto
 		};
 
+		/// <summary>
+		/// Reads JSON string and materializes it to given type.
+		/// </summary>
+		/// <typeparam name="T">Type to materialize.</typeparam>
+		/// <param name="context">The OWIN context.</param>
+		/// <returns>Materialized instance of T.</returns>
 		public static async Task<T> ReadJson<T>(this IOwinContext context)
 		{
 			var s = await context.ReadStringAsync();
 			return JsonConvert.DeserializeObject<T>(s, JsonSerializerSettings);
-		}
-
-		public static async Task<JToken> ReadJToken(this IOwinContext context)
-		{
-			var s = await context.ReadStringAsync();
-			return JToken.Parse(s);
-		}
-
-		public static async Task<JObject> ReadJObject(this IOwinContext context)
-		{
-			var s = await context.ReadStringAsync();
-			return JObject.Parse(s);
-		}
-
-		public static async Task<JArray> ReadJArray(this IOwinContext context)
-		{
-			var s = await context.ReadStringAsync();
-			return JArray.Parse(s);
 		}
 
 		public static async Task<T[]> ReadObjectArray<T>(this IOwinContext context)
@@ -46,17 +34,56 @@ namespace Owin.Routing
 			return arr.OfType<JObject>().Select(item => item.ToObject<T>(serializer)).ToArray();
 		}
 
+		/// <summary>
+		/// Reads JSON string and parse it to <see cref="JToken"/>.
+		/// </summary>
+		/// <param name="context">The OWIN context.</param>
+		public static async Task<JToken> ReadJToken(this IOwinContext context)
+		{
+			var s = await context.ReadStringAsync();
+			return JToken.Parse(s);
+		}
+
+		/// <summary>
+		/// Reads JSON string and parse it to <see cref="JObject"/>.
+		/// </summary>
+		/// <param name="context">The OWIN context.</param>
+		public static async Task<JObject> ReadJObject(this IOwinContext context)
+		{
+			var s = await context.ReadStringAsync();
+			return JObject.Parse(s);
+		}
+
+		/// <summary>
+		/// Reads JSON string and parse it to <see cref="JArray"/>.
+		/// </summary>
+		/// <param name="context">The OWIN context.</param>
+		public static async Task<JArray> ReadJArray(this IOwinContext context)
+		{
+			var s = await context.ReadStringAsync();
+			return JArray.Parse(s);
+		}
+
+		/// <summary>
+		/// Writes given value as JSON string.
+		/// </summary>
+		/// <param name="context">The OWIN context.</param>
+		/// <param name="value">The value to serialize.</param>
 		public static async Task WriteJson(this IOwinContext context, object value)
 		{
-			// TODO async serialization
 			var json = JsonConvert.SerializeObject(value, JsonSerializerSettings);
-			context.Response.Headers.Set("Content-Type", "application/json");
+			const string contentType = "application/json";
+			context.Response.Headers.Set("Content-Type", contentType);
 			context.Response.Headers.Set("Content-Encoding", "utf8");
-			context.Response.ContentType = "application/json";
+			context.Response.ContentType = contentType;
 			var bytes = Encoding.UTF8.GetBytes(json);
 			await context.Response.WriteAsync(bytes);
 		}
 
+		/// <summary>
+		/// Reads string from request body.
+		/// </summary>
+		/// <param name="context">The OWIN request context.</param>
 		public static async Task<string> ReadStringAsync(this IOwinContext context)
 		{
 			var stream = await context.ReadStreamAsync();
@@ -64,6 +91,10 @@ namespace Owin.Routing
 			return Encoding.UTF8.GetString(stream.ToArray());
 		}
 
+		/// <summary>
+		/// Reads <see cref="MemoryStream"/> from request body.
+		/// </summary>
+		/// <param name="context">The OWIN request context.</param>
 		public static async Task<MemoryStream> ReadStreamAsync(this IOwinContext context)
 		{
 			var stream = new MemoryStream();

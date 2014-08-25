@@ -7,6 +7,12 @@ namespace Owin.Routing
 {
 	public static class ReflectionRoutingApi
 	{
+		/// <summary>
+		/// Finds non-static methods marked with <see cref="RouteAttribute"/> and registers routes on reflected methods.
+		/// </summary>
+		/// <typeparam name="T">Type to reflect.</typeparam>
+		/// <param name="app">The OWIN pipeline builder.</param>
+		/// <param name="getInstance">Functor to get instance of T.</param>
 		public static IAppBuilder RegisterRoutes<T>(this IAppBuilder app, Func<IOwinContext, T> getInstance)
 		{
 			if (app == null) throw new ArgumentNullException("app");
