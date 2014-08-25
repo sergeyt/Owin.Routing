@@ -17,6 +17,6 @@
 		</dependencies>
 	</metadata>
 	<files>
-		<file src="..\.artifacts\Owin.Routing\Owin.Routing.dll" target="lib\net45"/>
+		<file src="..\.out\Owin.Routing\Owin.Routing.dll" target="lib\net45"/>
 	</files>
 </package>

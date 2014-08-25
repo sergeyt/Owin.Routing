@@ -8,19 +8,21 @@
 	<Import Project="zipfile.targets" />
 	<Import Project="MSBuild.Community.Tasks.targets" />
 
-	<UsingTask TaskName="Microsoft.Build.Tasks.XmlPoke" AssemblyName="Microsoft.Build.Tasks.v4.0, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"/>
-
 	<PropertyGroup>
 		<Product>Owin.Routing</Product>
 		<RootDir>$(MSBuildProjectDirectory)\..</RootDir>
 		<SrcDir>$(RootDir)\src</SrcDir>
-		<DeployDir>$(RootDir)\.artifacts</DeployDir>
+		<DeployDir>$(RootDir)\.out</DeployDir>
 		<!-- TODO read from CommonAssemblyInfo.cs -->
 		<ProductVersion>0.4.1.0</ProductVersion>
 		<Configuration>release</Configuration>
+		<TestDefines>TRACE;DEBUG;NUNIT</TestDefines>
 		<OutDir>$(SrcDir)\bin\$(Configuration)</OutDir>
-		<TestOutDir>$(SrcDir)\bin\ReleaseTest</TestOutDir>
+		<TestOutDir>$(SrcDir)\bin\Test</TestOutDir>
 		<DeployZipFileName>$(Product)-$(Configuration)-v$(ProductVersion).zip</DeployZipFileName>
+		<NuGetExePath>$(RootDir)\.nuget\NuGet.exe</NuGetExePath>
+		<NUnitResultsFile>$(TestOutDir)\nunit-result.xml</NUnitResultsFile>
+		<NUnitToolPath>$(RootDir)\packages\NUnit.Runners.2.6.3\tools</NUnitToolPath>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -33,20 +35,21 @@
 	</Target>
 
 	<Target Name="Build">
-		<Message Text="Building configuration: $(Configuration)" />
+		<Message Text="Compiling release bits..." />
 		<MSBuild
 			Projects="%(Projects.FullPath)"
 			Properties="Configuration=$(Configuration);Platform=AnyCPU;ApplicationVersion=$(ProductVersion);SolutionDir=$(RootDir);OutputPath=$(OutDir)"
 			Targets="Rebuild"
 		/>
+		<Message Text="Compiling testing bits..." />
+		<MSBuild
+			Projects="%(Projects.FullPath)"
+			Properties="DefineConstants=$(TestDefines);Configuration=$(Configuration);Platform=AnyCPU;ApplicationVersion=$(ProductVersion);SolutionDir=$(RootDir);OutputPath=$(TestOutDir)"
+			Targets="Rebuild"
+		/>
 	</Target>
 
 	<Target Name="Test" DependsOnTargets="Build">
-		<PropertyGroup>
-			<NUnitResultsFile>$(OutDir)\nunit-result.xml</NUnitResultsFile>
-			<NUnitToolPath>$(RootDir)\packages\NUnit.Runners.2.6.3\tools</NUnitToolPath>
-		</PropertyGroup>
-
 		<ItemGroup>
 			<TestAssemblies Include="$(OutDir)\Tests.dll"/>
 		</ItemGroup>
@@ -62,21 +65,13 @@
 	</Target>
 
 	<Target Name="_InstallNUnitConsole">
-		<PropertyGroup>
-			<NuGetExePath>$(RootDir)\.nuget\NuGet.exe</NuGetExePath>
-			<NUnitToolPath>$(RootDir)\packages\NUnit.Runners.2.6.3\tools</NUnitToolPath>
-		</PropertyGroup>
-
-		<Exec WorkingDirectory="$(RootDir)"
-			  Command="$(NuGetExePath) install NUnit.Runners -Version 2.6.3 -OutputDirectory packages"/>
+		<Exec WorkingDirectory="$(RootDir)" Command="$(NuGetExePath) install NUnit.Runners -Version 2.6.3 -OutputDirectory packages"/>
 
 		<ItemGroup>
 			<ConfigFiles Include="$(MSBuildProjectDirectory)\nunit-console.exe.config"/>
 		</ItemGroup>
 		
-		<Copy SourceFiles="@(ConfigFiles)"
-			  DestinationFolder="$(NUnitToolPath)"
-			  OverwriteReadOnlyFiles="true"/>
+		<Copy SourceFiles="@(ConfigFiles)" DestinationFolder="$(NUnitToolPath)" OverwriteReadOnlyFiles="true"/>
 	</Target>
 
 	<Target Name="Deploy" DependsOnTargets="Build">
@@ -102,18 +97,10 @@
 			<ArtifactDirs Include="$(DeployDir)\$(Product)"/>
 		</ItemGroup>
 
-		<ZipFile
-			BaseDir="$(DeployDir)"
-			Files="@(ArtifactDirs)"
-			ZipFileName="$(DeployDir)\$(DeployZipFileName)"
-		/>
+		<ZipFile BaseDir="$(DeployDir)" Files="@(ArtifactDirs)" ZipFileName="$(DeployDir)\$(DeployZipFileName)"/>
 	</Target>
 
 	<Target Name="Pack" DependsOnTargets="Deploy">
-		<PropertyGroup>
-			<NuGetExePath>$(RootDir)\.nuget\NuGet.exe</NuGetExePath>
-		</PropertyGroup>
-
 		<ItemGroup>
 			<NuSpecs Include="$(RootDir)\.nuspecs\*.nuspec"/>
 		</ItemGroup>

@@ -12,7 +12,7 @@ if not defined FrameworkVersion (
 )
 
 @set MSBUILDCMD=%FrameworkDir%%FrameworkVersion%\msbuild.exe
-@set MSBUILD_OPTS=/l:FileLogger,Microsoft.Build.Engine;logfile=build.log;append=false /consoleloggerparameters:verbosity=minimal /consoleloggerparameters:Summary
+@set MSBUILD_OPTS=/l:FileLogger,Microsoft.Build.Engine;logfile=build.log;append=false
 
 if "%1"=="clean" (
 	echo CLEAN...CLEAN...CLEAN...CLEAN...CLEAN...CLEAN...
