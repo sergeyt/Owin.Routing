@@ -12,7 +12,7 @@
 		<copyright>Copyright 2014</copyright>
 		<tags>owin routing</tags>
 		<dependencies>
-			<dependency id="Microsoft.Owin" version="2.1.0"/>
+			<dependency id="Microsoft.Owin" version="3.0.0"/>
 			<dependency id="Owin" version="1.0"/>
 		</dependencies>
 	</metadata>
