@@ -42,7 +42,8 @@ namespace Owin.Routing
 
 			if (_verbs.ContainsKey(method))
 			{
-				throw new ArgumentException(string.Format("Handler for {0} is already set.", method));
+				// already defined earlier
+				return this;
 			}
 
 			_verbs[method] = handler;

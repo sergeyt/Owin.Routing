@@ -84,12 +84,12 @@ namespace Tests
 		}
 
 		[Test]
-		public void ShouldThrowOnRegisteringFewHandlersForSameVerb()
+		public void ShouldNotThrowOnRegisteringFewHandlersForSameVerb()
 		{
 			var app = new Mock<IAppBuilder>();
 			app.Setup(x => x.Properties).Returns(new Dictionary<string, object>());
 
-			Assert.Throws<ArgumentException>(() =>
+			Assert.DoesNotThrow(() =>
 			{
 				app.Object.Route("a")
 					.Get(async _ => { })
