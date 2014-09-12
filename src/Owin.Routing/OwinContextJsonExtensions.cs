@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Owin.Routing
 {
-	public static class OwinExtensions
+	public static class OwinContextJsonExtensions
 	{
 		private static readonly JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings
 		{

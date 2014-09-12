@@ -1,18 +1,19 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Routing;
 using Microsoft.Owin;
 
 namespace Owin.Routing
 {
+	using AppFunc = Func<IOwinContext, Func<Task>, Task>;
 	using HandlerFunc = Func<IOwinContext, Task>;
 
 	internal static class Keys
 	{
-		public const string Routes = "app.routes";
-		public const string RouteData = "app.route.data";
+		public const string Routes = "owin.routing.routes";
+		public const string RouteData = "owin.routing.data";
+		public const string HttpContext = "owin.routing.httpctx";
 	}
 
 	/// <summary>
@@ -28,106 +29,185 @@ namespace Owin.Routing
 		public static RouteBuilder Route(this IAppBuilder app, string url)
 		{
 			if (app == null) throw new ArgumentNullException("app");
-			if (string.IsNullOrEmpty(url)) throw new ArgumentNullException("url");
+			if (string.IsNullOrWhiteSpace(url)) throw new ArgumentNullException("url");
 
-			var routes = app.Properties.Get<RouteCollection>(Keys.Routes);
-
+			var routes = app.Properties.Get<IDictionary<string,Route>>(Keys.Routes);
 			if (routes == null)
 			{
-				routes = new RouteCollection();
+				routes = new Dictionary<string, Route>(StringComparer.InvariantCultureIgnoreCase);
 				app.Properties[Keys.Routes] = routes;
-
-				app.Use(async (ctx, next) =>
-				{
-					RouteData data;
-					using (routes.GetReadLock())
-					{
-						var httpContext = new HttpContextImpl(ctx);
-						data = routes.Select(r => GetRouteData(r, httpContext)).FirstOrDefault(d => d != null);
-					}
-
-					if (data != null)
-					{
-						ctx.Set(Keys.RouteData, data);
-						await ((RouteBuilder) data.RouteHandler).Invoke(ctx);
-					}
-					else
-					{
-						await next();
-					}
-				});
 			}
 
-			var existing = routes.OfType<Route>().FirstOrDefault(r => string.Equals(r.Url, url, StringComparison.InvariantCultureIgnoreCase));
-			if (existing != null)
+			Route route;
+			if (!routes.TryGetValue(url, out route))
 			{
-				return (RouteBuilder) existing.RouteHandler;
+				var builder = new RouteBuilder(app);
+				route = new Route(url, builder);
+				builder.Route = route;
+				routes[url] = route;
 			}
 
-			var builder = new RouteBuilder();
-			routes.Add(new Route(url, builder));
-			return builder;
+			return (RouteBuilder) route.RouteHandler;
 		}
 
-		private static RouteData GetRouteData(RouteBase route, HttpContextBase httpContext)
-		{
-			var data = route.GetRouteData(httpContext);
-			if (data == null) return null;
-			var builder = data.RouteHandler as RouteBuilder;
-			if (builder == null) return null;
-			return builder.HasHandler(httpContext.Request.HttpMethod) ? data : null;
-		}
+		#region Shortcuts
 
+		/// <summary>
+		/// Registers GET handler.
+		/// </summary>
+		/// <param name="app"></param>
+		/// <param name="url"></param>
+		/// <param name="handler"></param>
+		/// <returns></returns>
 		public static IAppBuilder Get(this IAppBuilder app, string url, HandlerFunc handler)
 		{
 			app.Route(url).Get(handler);
 			return app;
 		}
 
+		/// <summary>
+		/// Registers GET handler.
+		/// </summary>
+		/// <param name="app"></param>
+		/// <param name="url"></param>
+		/// <param name="handler"></param>
+		/// <returns></returns>
+		public static IAppBuilder Get(this IAppBuilder app, string url, AppFunc handler)
+		{
+			app.Route(url).Get(handler);
+			return app;
+		}
+
+		/// <summary>
+		/// Registers POST handler.
+		/// </summary>
+		/// <param name="app"></param>
+		/// <param name="url"></param>
+		/// <param name="handler"></param>
+		/// <returns></returns>
 		public static IAppBuilder Post(this IAppBuilder app, string url, HandlerFunc handler)
 		{
 			app.Route(url).Post(handler);
 			return app;
 		}
 
+		/// <summary>
+		/// Registers POST handler.
+		/// </summary>
+		/// <param name="app"></param>
+		/// <param name="url"></param>
+		/// <param name="handler"></param>
+		/// <returns></returns>
+		public static IAppBuilder Post(this IAppBuilder app, string url, AppFunc handler)
+		{
+			app.Route(url).Post(handler);
+			return app;
+		}
+
+		/// <summary>
+		/// Registers PUT handler.
+		/// </summary>
+		/// <param name="app"></param>
+		/// <param name="url"></param>
+		/// <param name="handler"></param>
+		/// <returns></returns>
 		public static IAppBuilder Put(this IAppBuilder app, string url, HandlerFunc handler)
 		{
 			app.Route(url).Put(handler);
 			return app;
 		}
 
+		/// <summary>
+		/// Registers PUT handler.
+		/// </summary>
+		/// <param name="app"></param>
+		/// <param name="url"></param>
+		/// <param name="handler"></param>
+		/// <returns></returns>
+		public static IAppBuilder Put(this IAppBuilder app, string url, AppFunc handler)
+		{
+			app.Route(url).Put(handler);
+			return app;
+		}
+
+		/// <summary>
+		/// Registers UPDATE handler.
+		/// </summary>
+		/// <param name="app"></param>
+		/// <param name="url"></param>
+		/// <param name="handler"></param>
+		/// <returns></returns>
 		public static IAppBuilder Update(this IAppBuilder app, string url, HandlerFunc handler)
 		{
 			app.Route(url).Update(handler);
 			return app;
 		}
 
+		/// <summary>
+		/// Registers UPDATE handler.
+		/// </summary>
+		/// <param name="app"></param>
+		/// <param name="url"></param>
+		/// <param name="handler"></param>
+		/// <returns></returns>
+		public static IAppBuilder Update(this IAppBuilder app, string url, AppFunc handler)
+		{
+			app.Route(url).Update(handler);
+			return app;
+		}
+
+		/// <summary>
+		/// Registers PATCH handler.
+		/// </summary>
+		/// <param name="app"></param>
+		/// <param name="url"></param>
+		/// <param name="handler"></param>
+		/// <returns></returns>
 		public static IAppBuilder Patch(this IAppBuilder app, string url, HandlerFunc handler)
 		{
 			app.Route(url).Patch(handler);
 			return app;
 		}
 
+		/// <summary>
+		/// Registers PATCH handler.
+		/// </summary>
+		/// <param name="app"></param>
+		/// <param name="url"></param>
+		/// <param name="handler"></param>
+		/// <returns></returns>
+		public static IAppBuilder Patch(this IAppBuilder app, string url, AppFunc handler)
+		{
+			app.Route(url).Patch(handler);
+			return app;
+		}
+
+		/// <summary>
+		/// Registers DELETE handler.
+		/// </summary>
+		/// <param name="app"></param>
+		/// <param name="url"></param>
+		/// <param name="handler"></param>
+		/// <returns></returns>
 		public static IAppBuilder Delete(this IAppBuilder app, string url, HandlerFunc handler)
 		{
 			app.Route(url).Delete(handler);
 			return app;
 		}
-	}
 
-	public static class OwinContextExtensions
-	{
-		public static T GetRouteValue<T>(this IOwinContext context, string name)
+		/// <summary>
+		/// Registers DELETE handler.
+		/// </summary>
+		/// <param name="app"></param>
+		/// <param name="url"></param>
+		/// <param name="handler"></param>
+		/// <returns></returns>
+		public static IAppBuilder Delete(this IAppBuilder app, string url, AppFunc handler)
 		{
-			var data = context.Get<RouteData>(Keys.RouteData);
-			if (data == null) throw new InvalidOperationException();
-			var val = data.Values[name];
-			return val.ToType<T>();
+			app.Route(url).Delete(handler);
+			return app;
 		}
 
-		public static string GetRouteValue(this IOwinContext context, string name)
-		{
-			return context.GetRouteValue<string>(name);
-		}
+		#endregion
 	}
 }

@@ -40,6 +40,33 @@ namespace Tests
 			}
 		}
 
+		[TestCase("/docs/reports/1", Result = "reports[1]")]
+		public async Task<string> Chain(string path)
+		{
+			using (var server = TestServer.Create(app =>
+			{
+				app.Route("docs/{collection}/{id}")
+					.Get(async (ctx, next) =>
+					{
+						var col = ctx.GetRouteValue("collection");
+						var id = ctx.GetRouteValue("id");
+						ctx.Set("doc-path", string.Format("{0}[{1}]", col, id));
+						await next();
+					});
+
+				app.Route("docs/{collection}/{id}")
+					.Get(async ctx =>
+					{
+						var s = ctx.Get<string>("doc-path");
+						await ctx.Response.WriteAsync(s);
+					});
+			}))
+			{
+				var response = await server.HttpClient.GetAsync(path);
+				return await response.Content.ReadAsStringAsync();
+			}
+		}
+
 		[TestCase("GET", "/docs/tags/1", Result = "generic:tags[1]")]
 		[TestCase("POST", "/docs/tags/1", Result = "specific:tags[1]")]
 		public async Task<string> FromSpecificToGeneral(string method, string path)
