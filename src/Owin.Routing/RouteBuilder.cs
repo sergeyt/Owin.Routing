@@ -55,29 +55,7 @@ namespace Owin.Routing
 		{
 			if (handler == null) throw new ArgumentNullException("handler");
 
-			App.Use(async (ctx, next) =>
-			{
-				if (string.Equals(ctx.Request.Method, method, StringComparison.OrdinalIgnoreCase))
-				{
-					var httpContext = ctx.HttpContext();
-					var data = Route.GetRouteData(httpContext);
-					if (data != null)
-					{
-						ctx.Set(Keys.RouteData, data);
-						await handler(ctx);
-					}
-					else
-					{
-						await next();
-					}
-				}
-				else
-				{
-					await next();
-				}
-			});
-
-			return this;
+			return Register(method, (ctx, _) => handler(ctx));
 		}
 
 		/// <summary>
