@@ -3,6 +3,9 @@ using System.Linq;
 
 namespace Owin.Routing
 {
+	/// <summary>
+	/// Mark your method with this attribute to specify route (URL pattern and HTTML methods) to be registered in OWIN pipeline.
+	/// </summary>
 	[AttributeUsage(AttributeTargets.Class
 	                | AttributeTargets.Interface
 	                | AttributeTargets.Method
@@ -21,12 +24,12 @@ namespace Owin.Routing
 		}
 
 		/// <summary>
-		/// HTTP method.
+		/// Specifies HTTP methods.
 		/// </summary>
 		public string[] Methods { get; private set; }
 
 		/// <summary>
-		/// Url template.
+		/// Specifies URL pattern.
 		/// </summary>
 		public string Url { get; private set; }
 	}

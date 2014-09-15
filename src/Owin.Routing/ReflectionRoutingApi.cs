@@ -2,9 +2,12 @@
 using System.Linq;
 using System.Reflection;
 using Microsoft.Owin;
+using Newtonsoft.Json.Linq;
 
 namespace Owin.Routing
 {
+	// TODO support properties, fields
+
 	public static class ReflectionRoutingApi
 	{
 		/// <summary>
@@ -19,40 +22,27 @@ namespace Owin.Routing
 			if (getInstance == null) throw new ArgumentNullException("getInstance");
 
 			var methods = typeof(T)
-				.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+				.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static)
 				.Where(m => m.GetAttribute<RouteAttribute>() != null)
 				.ToList();
 
 			methods.ForEach(method =>
 			{
 				var invoke = DynamicMethods.CompileMethod(typeof(T), method);
-				var sig = method.GetParameters();
+				var argsResolver = ResolveArguments.Compile(method);
 
 				method.GetAttributes<RouteAttribute>().ToList().ForEach(attr =>
 				{
 					foreach (var verb in attr.Methods)
 					{
-						if (string.Equals(verb, "POST", StringComparison.OrdinalIgnoreCase))
+						app.Route(attr.Url).Register(verb, async ctx =>
 						{
-							app.Route(attr.Url).Register(verb, async ctx =>
-							{
-								var json = await ctx.ReadJObject();
-								var args = sig.Select(p => json.Value<object>(p.Name)).ToArray();
-								var instance = getInstance(ctx);
-								var result = invoke(instance, args);
-								await ctx.WriteJson(result);
-							});
-						}
-						else
-						{
-							app.Route(attr.Url).Register(verb, async ctx =>
-							{
-								var args = sig.Select(p => (object) ctx.GetRouteValue(p.Name)).ToArray();
-								var instance = getInstance(ctx);
-								var result = invoke(instance, args);
-								await ctx.WriteJson(result);
-							});
-						}
+							var json = ctx.Request.Method.Equals("GET", StringComparison.OrdinalIgnoreCase) ? null : await ctx.ReadJObject();
+							var args = argsResolver(ctx, json);
+							var instance = method.IsStatic ? (object) null : getInstance(ctx);
+							var result = invoke(instance, args);
+							await ctx.WriteJson(result);
+						});
 					}
 				});
 			});
