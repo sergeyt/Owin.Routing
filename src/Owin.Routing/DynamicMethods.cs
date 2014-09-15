@@ -16,6 +16,17 @@ namespace Owin.Routing
 			return property != null ? CompileSetter(type, property) : CompileSetter(type, (FieldInfo) member);
 		}
 
+		public static Func<object, object> CompileGetter(Type type, FieldInfo field)
+		{
+			var target = Expression.Parameter(typeof(object), "target");
+			var instance = Expression.Convert(target, type);
+
+			var value = Expression.Convert(Expression.Field(instance, field), typeof(object));
+			var lambda = Expression.Lambda<Func<object, object>>(value, target);
+
+			return lambda.Compile();
+		}
+
 		public static Action<object, object> CompileSetter(Type type, FieldInfo field)
 		{
 			var target = Expression.Parameter(typeof(object), "target");

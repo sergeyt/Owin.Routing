@@ -11,7 +11,7 @@ namespace Owin.Routing.Tests
 	public class DynamicMethodsTests
 	{
 		[Test]
-		public void CompileGetter()
+		public void PropertyGetter()
 		{
 			var item = new Item {Name = "a"};
 			var type = item.GetType();
@@ -19,6 +19,17 @@ namespace Owin.Routing.Tests
 			var getter = DynamicMethods.CompileGetter(type, property);
 			var value = getter(item);
 			Assert.AreEqual(item.Name, value);
+		}
+
+		[Test]
+		public void FieldGetter()
+		{
+			var item = new Item { Field = "a" };
+			var type = item.GetType();
+			var field = type.GetField("Field");
+			var getter = DynamicMethods.CompileGetter(type, field);
+			var value = getter(item);
+			Assert.AreEqual(item.Field, value);
 		}
 
 		[Test]
