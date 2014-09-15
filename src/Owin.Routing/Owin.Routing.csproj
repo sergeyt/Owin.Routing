@@ -68,6 +68,7 @@
     <Compile Include="DynamicMethods.cs" />
     <Compile Include="BclExtensions.cs" />
     <Compile Include="HttpContextImpl.cs" />
+    <Compile Include="RequestElement.cs" />
     <Compile Include="ResolveArguments.cs" />
     <Compile Include="OwinContextRoutingExtensions.cs" />
     <Compile Include="OwinContextJsonExtensions.cs" />

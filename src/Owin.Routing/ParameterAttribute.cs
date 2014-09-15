@@ -5,31 +5,23 @@ using System.Linq;
 
 namespace Owin.Routing
 {
-	[DebuggerDisplay("{Method} {Source}/{Name}")]
+	[DebuggerDisplay("{Method} {Source}.{Name}")]
 	internal struct ParameterBinding
 	{
-		public enum DataSource
-		{
-			Route,
-			Query,
-			Header,
-			Json
-		}
-
-		public readonly string Method;
-		public readonly DataSource Source;
+		private readonly string _method;
+		public readonly RequestElement Source;
 		public readonly string Name;
 
-		public ParameterBinding(string method, DataSource source, string name)
+		public ParameterBinding(string method, RequestElement source, string name)
 		{
-			Method = method;
+			_method = method;
 			Source = source;
 			Name = name;
 		}
 
 		public override string ToString()
 		{
-			return string.Format("{0} {1}/{2}", Method, Source, Name);
+			return string.Format("{0} {1}{2}", _method, Source, string.IsNullOrEmpty(Name) ? string.Empty : "." + Name);
 		}
 	}
 
@@ -39,7 +31,7 @@ namespace Owin.Routing
 	/// Specifies parameter bindings.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Parameter)]
-	public class ParameterAttribute : Attribute
+	public sealed class ParameterAttribute : Attribute
 	{
 		private readonly IDictionary<string, ParameterBinding> _bindings = new Dictionary<string, ParameterBinding>(StringComparer.OrdinalIgnoreCase);
 		
@@ -56,9 +48,9 @@ namespace Owin.Routing
 
 				var method = parts.Length > 1 ? parts[0] : "*";
 				var bs = parts.Length > 1 ? parts[1] : parts[0];
-				parts = bs.Split(new[] {'/'}, StringSplitOptions.RemoveEmptyEntries);
+				parts = bs.Split(new[] {'.'}, StringSplitOptions.RemoveEmptyEntries);
 
-				ParameterBinding.DataSource source;
+				RequestElement source;
 				if (!Enum.TryParse(parts[0], true, out source)) continue;
 
 				var name = parts.Length > 1 ? parts[1] : string.Empty;
@@ -89,17 +81,15 @@ namespace Owin.Routing
 			}
 
 			var source = method.Equals("POST", StringComparison.OrdinalIgnoreCase)
-				? ParameterBinding.DataSource.Json
-				: ParameterBinding.DataSource.Route;
+				? RequestElement.Body
+				: RequestElement.Route;
 			return new ParameterBinding(method, source, parameterName);
 		}
 
-#if NUNIT
 		public override string ToString()
 		{
 			return string.Join(";", (from e in _bindings select e.Value.ToString()).ToArray());
 		}
-#endif
 	}
 }
 
@@ -112,25 +102,29 @@ namespace Owin.Routing.Tests
 	[TestFixture]
 	public class ParameterAttributeTests
 	{
-		[TestCase("GET route/param", Result = "GET Route/param")]
-		[TestCase("GET query/param", Result = "GET Query/param")]
-		[TestCase("GET header/param", Result = "GET Header/param")]
-		[TestCase("GET json/param", Result = "GET Json/param")]
+		[TestCase("GET route.param", Result = "GET Route.param")]
+		[TestCase("GET query.param", Result = "GET Query.param")]
+		[TestCase("GET header.param", Result = "GET Header.param")]
+		[TestCase("GET body.param", Result = "GET Body.param")]
+		[TestCase("GET\troute.param", Result = "GET Route.param")]
+		[TestCase("GET\tquery.param", Result = "GET Query.param")]
+		[TestCase("GET\theader.param", Result = "GET Header.param")]
+		[TestCase("GET\tbody.param", Result = "GET Body.param")]
 
-		[TestCase("GET route", Result = "GET Route/")]
-		[TestCase("GET query", Result = "GET Query/")]
-		[TestCase("GET header", Result = "GET Header/")]
-		[TestCase("GET json", Result = "GET Json/")]
-
-		[TestCase("route/param", Result = "* Route/param")]
-		[TestCase("query/param", Result = "* Query/param")]
-		[TestCase("header/param", Result = "* Header/param")]
-		[TestCase("json/param", Result = "* Json/param")]
+		[TestCase("GET route", Result = "GET Route")]
+		[TestCase("GET query", Result = "GET Query")]
+		[TestCase("GET header", Result = "GET Header")]
+		[TestCase("GET body", Result = "GET Body")]
 		
-		[TestCase("route", Result = "* Route/")]
-		[TestCase("query", Result = "* Query/")]
-		[TestCase("header", Result = "* Header/")]
-		[TestCase("json", Result = "* Json/")]
+		[TestCase("route.param", Result = "* Route.param")]
+		[TestCase("query.param", Result = "* Query.param")]
+		[TestCase("header.param", Result = "* Header.param")]
+		[TestCase("body.param", Result = "* Body.param")]
+		
+		[TestCase("route", Result = "* Route")]
+		[TestCase("query", Result = "* Query")]
+		[TestCase("header", Result = "* Header")]
+		[TestCase("body", Result = "* Body")]
 		
 		[TestCase("invalid/param", Result = "")]
 		public string Ctor(string binding)
@@ -138,9 +132,9 @@ namespace Owin.Routing.Tests
 			return new ParameterAttribute(binding).ToString();
 		}
 
-		[TestCase("GET route/param", "GET", "p", Result = "GET Route/param")]
-		[TestCase("GET route/param", "HEAD", "p", Result = "HEAD Route/p")]
-		[TestCase("GET route/param", "POST", "p", Result = "POST Json/p")]
+		[TestCase("GET route.param", "GET", "p", Result = "GET Route.param")]
+		[TestCase("GET route.param", "HEAD", "p", Result = "HEAD Route.p")]
+		[TestCase("GET route.param", "POST", "p", Result = "POST Body.p")]
 		public string GetBinding(string binding, string method, string name)
 		{
 			var attr = new ParameterAttribute(binding);

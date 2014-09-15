@@ -40,13 +40,13 @@ namespace Owin.Routing
 			var binding = bindings.GetBinding(ctx.Request.Method, parameter.Name);
 			switch (binding.Source)
 			{
-				case ParameterBinding.DataSource.Route:
+				case RequestElement.Route:
 					return ctx.GetRouteValue(binding.Name).ToType(parameter.ParameterType);
-				case ParameterBinding.DataSource.Query:
+				case RequestElement.Query:
 					return ctx.Request.Query.Get(binding.Name).ToType(parameter.ParameterType);
-				case ParameterBinding.DataSource.Header:
+				case RequestElement.Header:
 					return ctx.Request.Headers.Get(binding.Name).ToType(parameter.ParameterType);
-				case ParameterBinding.DataSource.Json:
+				case RequestElement.Body:
 					return json.Value<object>(binding.Name).ToType(parameter.ParameterType);
 				default:
 					throw new NotSupportedException();
