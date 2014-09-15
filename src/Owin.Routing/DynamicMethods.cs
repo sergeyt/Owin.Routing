@@ -10,6 +10,28 @@ namespace Owin.Routing
 	/// </summary>
 	internal static class DynamicMethods
 	{
+		public static Action<object, object> CompileSetter(Type type, MemberInfo member)
+		{
+			var property = member as PropertyInfo;
+			return property != null ? CompileSetter(type, property) : CompileSetter(type, (FieldInfo) member);
+		}
+
+		public static Action<object, object> CompileSetter(Type type, FieldInfo field)
+		{
+			var target = Expression.Parameter(typeof(object), "target");
+			var value = Expression.Parameter(typeof(object), "value");
+
+			var instance = Expression.Convert(target, type);
+			var val = Convert(value, field.FieldType);
+
+			var fieldExpr = Expression.Field(instance, field);
+			var assign = Expression.Assign(fieldExpr, val);
+
+			var lambda = Expression.Lambda<Action<object, object>>(assign, target, value);
+
+			return lambda.Compile();
+		}
+
 		public static Func<object, object> CompileGetter(Type type, PropertyInfo property)
 		{
 			var target = Expression.Parameter(typeof(object), "target");
@@ -20,7 +42,7 @@ namespace Owin.Routing
 
 			return lambda.Compile();
 		}
-
+		
 		public static Action<object, object> CompileSetter(Type type, PropertyInfo property)
 		{
 			var method = property.GetSetMethod();
@@ -30,7 +52,7 @@ namespace Owin.Routing
 			var value = Expression.Parameter(typeof(object), "value");
 
 			var instance = Expression.Convert(target, type);
-			var val = Expression.Convert(value, property.PropertyType);
+			var val = Convert(value, property.PropertyType);
 
 			var call = Expression.Call(instance, method, val);
 			var lambda = Expression.Lambda<Action<object, object>>(call, target, value);
@@ -105,8 +127,7 @@ namespace Owin.Routing
 			var callArgs = parameters.Select((p, i) =>
 			{
 				var item = Expression.ArrayIndex(args, Expression.Constant(i));
-				var val = Convert(item, p.ParameterType);
-				return (Expression) Expression.Convert(val, p.ParameterType);
+				return Convert(item, p.ParameterType);
 			});
 
 			if (method.ReturnType == typeof(void))
@@ -128,9 +149,15 @@ namespace Owin.Routing
 			}
 		}
 
+		private static Expression Convert(Expression value, Type type)
+		{
+			var val = ConvertImpl(value, type);
+			return Expression.Convert(val, type);
+		}
+
 		private static MethodInfo _toTypeMethod;
 
-		private static Expression Convert(Expression value, Type type)
+		private static Expression ConvertImpl(Expression value, Type type)
 		{
 			var toType = _toTypeMethod ??
 			             (_toTypeMethod = typeof(ConvertExtensions).GetMethod("ToType", new[] {typeof(object), typeof(Type)}));

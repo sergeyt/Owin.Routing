@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
 
 namespace Owin.Routing
@@ -17,6 +18,11 @@ namespace Owin.Routing
 		{
 			var attrs = provider.GetAttributes<T>(inherit);
 			return attrs.Length > 0 ? attrs[0] : null;
+		}
+
+		public static bool HasAttribute<T>(this ICustomAttributeProvider provider, bool inherit = true) where T : Attribute
+		{
+			return provider.GetAttribute<T>(inherit) != null;
 		}
 	}
 
@@ -82,6 +88,28 @@ namespace Owin.Routing
 		public static T ToEnum<T>(this object value)
 		{
 			return (T)value.ToEnum(typeof(T));
+		}
+	}
+
+	internal static class StreamExtensions
+	{
+		public static byte[] ToByteArray(this Stream stream)
+		{
+			if (stream.CanSeek)
+			{
+				stream.Seek(0, SeekOrigin.Begin);
+			}
+
+			var buffer = new byte[16 * 1024];
+			using (var ms = new MemoryStream())
+			{
+				int read;
+				while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+				{
+					ms.Write(buffer, 0, read);
+				}
+				return ms.ToArray();
+			}
 		}
 	}
 }

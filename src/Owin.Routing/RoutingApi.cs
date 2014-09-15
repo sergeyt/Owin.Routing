@@ -14,12 +14,14 @@ namespace Owin.Routing
 		public const string Routes = "owin.routing.routes";
 		public const string RouteData = "owin.routing.data";
 		public const string HttpContext = "owin.routing.httpctx";
+		public const string RequestBytes = "req.bytes";
+		public const string JsonBody = "req.json";
 	}
 
 	/// <summary>
 	/// Provides basic routing API.
 	/// </summary>
-	public static class RoutingApi
+	public static partial class RoutingApi
 	{
 		/// <summary>
 		/// Injects route to app pipeline.

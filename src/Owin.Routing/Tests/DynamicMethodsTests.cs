@@ -1,6 +1,8 @@
 ﻿#if NUNIT
+
 using System.Collections;
 using System.Collections.Generic;
+
 using NUnit.Framework;
 
 namespace Owin.Routing.Tests
@@ -20,7 +22,7 @@ namespace Owin.Routing.Tests
 		}
 
 		[Test]
-		public void CompileSetter()
+		public void PropertySetter()
 		{
 			var item = new Item { Name = "a" };
 			var type = item.GetType();
@@ -28,6 +30,17 @@ namespace Owin.Routing.Tests
 			var setter = DynamicMethods.CompileSetter(type, property);
 			setter(item, "b");
 			Assert.AreEqual("b", item.Name);
+		}
+
+		[Test]
+		public void FieldSetter()
+		{
+			var item = new Item { Field = "a" };
+			var type = item.GetType();
+			var field = type.GetField("Field");
+			var setter = DynamicMethods.CompileSetter(type, field);
+			setter(item, "b");
+			Assert.AreEqual("b", item.Field);
 		}
 
 		[Test]
@@ -63,6 +76,7 @@ namespace Owin.Routing.Tests
 
 		class Item
 		{
+			public string Field;
 			public string Name { get; set; }
 		}
 

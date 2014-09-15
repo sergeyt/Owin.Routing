@@ -31,11 +31,11 @@ namespace Owin.Routing
 	/// Specifies parameter bindings.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Parameter)]
-	public sealed class ParameterAttribute : Attribute
+	public sealed class BindingsAttribute : Attribute
 	{
 		private readonly IDictionary<string, ParameterBinding> _bindings = new Dictionary<string, ParameterBinding>(StringComparer.OrdinalIgnoreCase);
 		
-		public ParameterAttribute(params string[] bindings)
+		public BindingsAttribute(params string[] bindings)
 		{
 			_bindings = new Dictionary<string, ParameterBinding>(StringComparer.OrdinalIgnoreCase);
 
@@ -66,7 +66,7 @@ namespace Owin.Routing
 		internal ParameterBinding GetBinding(string method, string parameterName)
 		{
 			ParameterBinding binding;
-			if (_bindings.TryGetValue(method, out binding))
+			if (method != null && _bindings.TryGetValue(method, out binding))
 			{
 				return string.IsNullOrWhiteSpace(binding.Name)
 					? new ParameterBinding(method, binding.Source, parameterName)
@@ -100,7 +100,7 @@ namespace Owin.Routing.Tests
 	using NUnit.Framework;
 
 	[TestFixture]
-	public class ParameterAttributeTests
+	public class BindingsAttributeTests
 	{
 		[TestCase("GET route.param", Result = "GET Route.param")]
 		[TestCase("GET query.param", Result = "GET Query.param")]
@@ -129,7 +129,7 @@ namespace Owin.Routing.Tests
 		[TestCase("invalid/param", Result = "")]
 		public string Ctor(string binding)
 		{
-			return new ParameterAttribute(binding).ToString();
+			return new BindingsAttribute(binding).ToString();
 		}
 
 		[TestCase("GET route.param", "GET", "p", Result = "GET Route.param")]
@@ -137,7 +137,7 @@ namespace Owin.Routing.Tests
 		[TestCase("GET route.param", "POST", "p", Result = "POST Body.p")]
 		public string GetBinding(string binding, string method, string name)
 		{
-			var attr = new ParameterAttribute(binding);
+			var attr = new BindingsAttribute(binding);
 			return attr.GetBinding(method, name).ToString();
 		}
 	}

@@ -2,13 +2,12 @@
 using System.Linq;
 using System.Reflection;
 using Microsoft.Owin;
-using Newtonsoft.Json.Linq;
 
 namespace Owin.Routing
 {
 	// TODO support properties, fields
 
-	public static class ReflectionRoutingApi
+	public static partial class RoutingApi
 	{
 		/// <summary>
 		/// Finds non-static methods marked with <see cref="RouteAttribute"/> and registers routes on reflected methods.
@@ -29,7 +28,7 @@ namespace Owin.Routing
 			methods.ForEach(method =>
 			{
 				var invoke = DynamicMethods.CompileMethod(typeof(T), method);
-				var argsResolver = ResolveArguments.Compile(method);
+				var resolver = ParameterMapper.Build(method);
 
 				method.GetAttributes<RouteAttribute>().ToList().ForEach(attr =>
 				{
@@ -37,8 +36,7 @@ namespace Owin.Routing
 					{
 						app.Route(attr.Url).Register(verb, async ctx =>
 						{
-							var json = ctx.Request.Method.Equals("GET", StringComparison.OrdinalIgnoreCase) ? null : await ctx.ReadJObject();
-							var args = argsResolver(ctx, json);
+							var args = resolver(ctx);
 							var instance = method.IsStatic ? (object) null : getInstance(ctx);
 							var result = invoke(instance, args);
 							await ctx.WriteJson(result);
