@@ -10,6 +10,10 @@ namespace Owin.Routing
 	/// </summary>
 	internal static class RequestMapper
 	{
+		/// <summary>
+		/// Builds object mapper from OWIN environment for given .NET type.
+		/// </summary>
+		/// <param name="type">The type of object to map.</param>
 		public static Func<IOwinContext, object> Build(Type type)
 		{
 			if (type == null) throw new ArgumentNullException("type");

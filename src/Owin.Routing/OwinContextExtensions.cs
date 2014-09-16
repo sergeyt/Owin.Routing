@@ -20,6 +20,8 @@ namespace Owin.Routing
 
 		public static JsonReader CreateReader(IOwinContext context)
 		{
+			if (context == null) throw new ArgumentNullException("context");
+
 			return new JsonTextReader(new StreamReader(context.Request.Body));
 		}
 
@@ -29,16 +31,33 @@ namespace Owin.Routing
 		}
 	}
 
+	/// <summary>
+	/// <see cref="IOwinContext"/> extensions.
+	/// </summary>
 	public static class OwinContextExtensions
 	{
+		/// <summary>
+		/// Gets value of route parameter.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="context">The OWIN context.</param>
+		/// <param name="name">The parameter name.</param>
 		public static T GetRouteValue<T>(this IOwinContext context, string name)
 		{
+			if (context == null) throw new ArgumentNullException("context");
+
 			var data = context.Get<RouteData>(Keys.RouteData);
 			if (data == null) throw new InvalidOperationException();
+
 			var val = data.Values[name];
 			return val.ToType<T>();
 		}
 
+		/// <summary>
+		/// Gets value of route parameter.
+		/// </summary>
+		/// <param name="context">The OWIN environment.</param>
+		/// <param name="name">The parameter name.</param>
 		public static string GetRouteValue(this IOwinContext context, string name)
 		{
 			return context.GetRouteValue<string>(name);
@@ -46,6 +65,8 @@ namespace Owin.Routing
 
 		internal static HttpContextBase HttpContext(this IOwinContext ctx)
 		{
+			if (ctx == null) throw new ArgumentNullException("ctx");
+
 			var value = ctx.Get<HttpContextBase>(Keys.HttpContext);
 			if (value == null)
 			{
@@ -57,6 +78,8 @@ namespace Owin.Routing
 
 		public static byte[] RequestBytes(this IOwinContext context)
 		{
+			if (context == null) throw new ArgumentNullException("context");
+
 			var value = context.Get<byte[]>(Keys.RequestBytes);
 			if (value == null)
 			{
@@ -66,8 +89,14 @@ namespace Owin.Routing
 			return value;
 		}
 
+		/// <summary>
+		/// Gets request body parsed as JSON.
+		/// </summary>
+		/// <param name="context">The OWIN environment.</param>
 		public static JToken JsonBody(this IOwinContext context)
 		{
+			if (context == null) throw new ArgumentNullException("context");
+
 			var value = context.Get<JToken>(Keys.JsonBody);
 			if (value == null)
 			{
@@ -131,6 +160,11 @@ namespace Owin.Routing
 			}
 		}
 
+		/// <summary>
+		/// Reads JSON array with mapping to given type.
+		/// </summary>
+		/// <typeparam name="T">Type of array element.</typeparam>
+		/// <param name="context">The OWIN environment.</param>
 		public static T[] ReadObjectArray<T>(this IOwinContext context)
 		{
 			var arr = context.ReadJArray();
