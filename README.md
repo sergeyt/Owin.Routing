@@ -43,17 +43,17 @@ public async Task<string> Test(string path)
 	using (var server = TestServer.Create(app =>
 	{
 		app.Route("docs/{collection}")
-			.Get(async (ctx, data) =>
+			.Get(async ctx =>
 			{
-				var name = Convert.ToString(data.Values["collection"]);
+				var name = ctx.GetRouteValue<string>("collection");
 				await ctx.Response.WriteAsync(name);
 			});
 
 		app.Route("docs/{collection}/{id}")
-			.Get(async (ctx, data) =>
+			.Get(async ctx =>
 			{
-				var col = Convert.ToString(data.Values["collection"]);
-				var id = Convert.ToString(data.Values["id"]);
+				var col = ctx.GetRouteValue<string>("collection");
+				var id = ctx.GetRouteValue<string>("id");
 				await ctx.Response.WriteAsync(string.Format("{0}[{1}]", col, id));
 			});
 	}))
