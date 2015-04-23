@@ -2,14 +2,14 @@
 <package>
 	<metadata>
 		<id>Owin.Routing</id>
-		<version>0.5.4.0</version>
+		<version>0.5.5.0</version>
 		<authors>Sergey Todyshev (stodyshev@gmail.com)</authors>
 		<owners>TsvBits</owners>
 		<licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
 		<projectUrl>https://github.com/sergeyt/Owin.Routing</projectUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>.NET library with simple routing inspired by express.js for Katana applications.</description>
-		<copyright>Copyright 2014</copyright>
+		<copyright>Copyright 2015</copyright>
 		<tags>owin routing</tags>
 		<dependencies>
 			<dependency id="Newtonsoft.Json" version="6.0.5"/>
