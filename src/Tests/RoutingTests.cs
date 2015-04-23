@@ -103,14 +103,6 @@ namespace Tests
 		}
 
 		[Test]
-		public void ShouldReturnSameRouteBuilder()
-		{
-			var app = new Mock<IAppBuilder>();
-			app.Setup(x => x.Properties).Returns(new Dictionary<string, object>());
-			Assert.AreSame(app.Object.Route("a"), app.Object.Route("a"));
-		}
-
-		[Test]
 		public void ShouldNotThrowOnRegisteringFewHandlersForSameVerb()
 		{
 			var app = new Mock<IAppBuilder>();
@@ -122,6 +114,41 @@ namespace Tests
 					.Get(async _ => { })
 					.Get(async _ => { });
 			});
+		}
+
+		[TestCase("/docs/reports", Result = "reports")]
+		[TestCase("/docs/reports/1", Result = "reports[1]")]
+		[TestCase("/api/reports", Result = "reports")]
+		[TestCase("/api/reports/1", Result = "reports[1]")]
+		public async Task<string> MapShouldWork(string path)
+		{
+			Action<IAppBuilder> api = app =>
+			{
+				app.Route("{collection}")
+					.Get(async ctx =>
+					{
+						var name = ctx.GetRouteValue("collection");
+						await ctx.Response.WriteAsync(name);
+					});
+
+				app.Route("{collection}/{id}")
+					.Get(async ctx =>
+					{
+						var col = ctx.GetRouteValue("collection");
+						var id = ctx.GetRouteValue("id");
+						await ctx.Response.WriteAsync(string.Format("{0}[{1}]", col, id));
+					});
+			};
+
+			using (var server = TestServer.Create(app =>
+			{
+				app.Map("/docs", api);
+				app.Map("/api", api);
+			}))
+			{
+				var response = await server.HttpClient.GetAsync(path);
+				return await response.Content.ReadAsStringAsync();
+			}
 		}
     }
 }

@@ -41,8 +41,8 @@ namespace Owin.Routing
 		public override string HttpMethod { get { return _request.Method; } }
 		public override Uri Url { get { return _request.Uri; } }
 		public override string AppRelativeCurrentExecutionFilePath { get { return "~/"; } }
-		public override string Path { get { return _request.Uri.LocalPath; } }
-		public override string PathInfo { get { return _request.Uri.LocalPath.TrimStart('/'); } }
+		public override string Path { get { return _request.Path.ToString(); } }
+		public override string PathInfo { get { return Path.TrimStart('/'); } }
 		public override string RawUrl { get { return _request.Uri.ToString(); } }
 		public override bool IsLocal { get { return false; } }
 		public override bool IsSecureConnection { get { return false; } }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Web.Routing;
 using Microsoft.Owin;
@@ -11,7 +10,6 @@ namespace Owin.Routing
 
 	internal static class Keys
 	{
-		public const string Routes = "owin.routing.routes";
 		public const string RouteData = "owin.routing.data";
 		public const string HttpContext = "owin.routing.httpctx";
 		public const string RequestBytes = "req.bytes";
@@ -33,23 +31,9 @@ namespace Owin.Routing
 			if (app == null) throw new ArgumentNullException("app");
 			if (string.IsNullOrWhiteSpace(url)) throw new ArgumentNullException("url");
 
-			var routes = app.Properties.Get<IDictionary<string,Route>>(Keys.Routes);
-			if (routes == null)
-			{
-				routes = new Dictionary<string, Route>(StringComparer.InvariantCultureIgnoreCase);
-				app.Properties[Keys.Routes] = routes;
-			}
-
-			Route route;
-			if (!routes.TryGetValue(url, out route))
-			{
-				var builder = new RouteBuilder(app);
-				route = new Route(url, builder);
-				builder.Route = route;
-				routes[url] = route;
-			}
-
-			return (RouteBuilder) route.RouteHandler;
+			var builder = new RouteBuilder(app);
+			builder.Route = new Route(url, builder);
+			return builder;
 		}
 
 		#region Shortcuts
