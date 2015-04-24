@@ -23,7 +23,7 @@ namespace Tests
 			lm.Setup(x => x.AddLicense(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
 				.Returns<string, string, string>((a, b, c) => a + b + c);
 
-			using (var server = TestServer.Create(app => app.RegisterRoutes(_ => lm.Object)))
+			using (var server = TestServer.Create(app => app.UseApi(_ => lm.Object)))
 			{
 				var s = await server.HttpClient.GetStringAsync("licenses");
 				Assert.AreEqual("[{\"SerialKey\":\"serialKey\",\"Package\":\"package\",\"Status\":\"activated\",\"DaysLeft\":12}]", s);
@@ -50,30 +50,30 @@ namespace Tests
 
 	public interface ILicenseManager
 	{
-		[Route("GET", "licenses")]
+		[Route("licenses")]
 		IEnumerable<LicenseInfo> GetLicenses();
 
-		[Route("GET", "licenses/{serialKey}/activationKey")]
+		[Route("licenses/{serialKey}/activationKey")]
 		string GetActivationKey(string serialKey);
 
-		[Route("GET", "licenses/{serialKey},{activationKey},{licenseKey}")]
-		[Route("POST", "licenses")]
+		[Route("licenses")]
 		string AddLicense(string serialKey, string activationKey, string licenseKey);
 
-		[Route("DELETE", "licenses/{serialKey}")]
+		[Route("licenses/{serialKey}")]
 		void RemoveLicense(string serialKey);
 
-		[Route("GET", "licenses/{subjectId}/activate")]
+		[HttpGet]
+		[Route("licenses/{subjectId}/activate")]
 		void Activate(Guid subjectId);
 
-		[Route("GET", "licenses/{subjectId}/deactivate")]
+		[HttpGet]
+		[Route("licenses/{subjectId}/deactivate")]
 		void Deactivate(Guid subjectId);
 
-		[Route("GET", "licenses/{subjectId}/status")]
+		[Route("licenses/{subjectId}/status")]
 		string GetLicenseStatus(Guid subjectId);
 
-		[Route("GET", "licenses/{subjectId}")]
-		[Route("GET", "licenses/{subjectId}/info")]
+		[Route("licenses/{subjectId}")]
 		LicenseInfo GetLicenseInfo(Guid subjectId);
 	}
 

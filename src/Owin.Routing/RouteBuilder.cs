@@ -64,7 +64,7 @@ namespace Owin.Routing
 		/// <param name="handler">The handler to register.</param>
 		public RouteBuilder Get(HandlerFunc handler)
 		{
-			return Register("GET", handler);
+			return Register(HttpMethod.Get, handler);
 		}
 
 		/// <summary>
@@ -73,7 +73,7 @@ namespace Owin.Routing
 		/// <param name="handler">The handler to register.</param>
 		public RouteBuilder Get(AppFunc handler)
 		{
-			return Register("GET", handler);
+			return Register(HttpMethod.Get, handler);
 		}
 
 		/// <summary>
@@ -82,7 +82,7 @@ namespace Owin.Routing
 		/// <param name="handler">The handler to register.</param>
 		public RouteBuilder Post(HandlerFunc handler)
 		{
-			return Register("POST", handler);
+			return Register(HttpMethod.Post, handler);
 		}
 
 		/// <summary>
@@ -91,7 +91,7 @@ namespace Owin.Routing
 		/// <param name="handler">The handler to register.</param>
 		public RouteBuilder Post(AppFunc handler)
 		{
-			return Register("POST", handler);
+			return Register(HttpMethod.Post, handler);
 		}
 
 		/// <summary>
@@ -100,7 +100,7 @@ namespace Owin.Routing
 		/// <param name="handler">The handler to register.</param>
 		public RouteBuilder Put(HandlerFunc handler)
 		{
-			return Register("PUT", handler);
+			return Register(HttpMethod.Put, handler);
 		}
 
 		/// <summary>
@@ -109,13 +109,14 @@ namespace Owin.Routing
 		/// <param name="handler">The handler to register.</param>
 		public RouteBuilder Put(AppFunc handler)
 		{
-			return Register("PUT", handler);
+			return Register(HttpMethod.Put, handler);
 		}
 
 		/// <summary>
 		/// Registers UPDATE handler.
 		/// </summary>
 		/// <param name="handler">The handler to register.</param>
+		[Obsolete]
 		public RouteBuilder Update(HandlerFunc handler)
 		{
 			return Register("UPDATE", handler);
@@ -125,6 +126,7 @@ namespace Owin.Routing
 		/// Registers UPDATE handler.
 		/// </summary>
 		/// <param name="handler">The handler to register.</param>
+		[Obsolete]
 		public RouteBuilder Update(AppFunc handler)
 		{
 			return Register("UPDATE", handler);
@@ -136,7 +138,7 @@ namespace Owin.Routing
 		/// <param name="handler">The handler to register.</param>
 		public RouteBuilder Patch(HandlerFunc handler)
 		{
-			return Register("PATCH", handler);
+			return Register(HttpMethod.Patch, handler);
 		}
 
 		/// <summary>
@@ -145,7 +147,7 @@ namespace Owin.Routing
 		/// <param name="handler">The handler to register.</param>
 		public RouteBuilder Patch(AppFunc handler)
 		{
-			return Register("PATCH", handler);
+			return Register(HttpMethod.Patch, handler);
 		}
 
 		/// <summary>
@@ -154,7 +156,7 @@ namespace Owin.Routing
 		/// <param name="handler">The handler to register.</param>
 		public RouteBuilder Delete(HandlerFunc handler)
 		{
-			return Register("DELETE", handler);
+			return Register(HttpMethod.Delete, handler);
 		}
 
 		/// <summary>
@@ -163,7 +165,7 @@ namespace Owin.Routing
 		/// <param name="handler">The handler to register.</param>
 		public RouteBuilder Delete(AppFunc handler)
 		{
-			return Register("DELETE", handler);
+			return Register(HttpMethod.Delete, handler);
 		}
 
 		IHttpHandler IRouteHandler.GetHttpHandler(RequestContext requestContext)

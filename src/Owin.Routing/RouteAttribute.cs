@@ -1,36 +1,28 @@
 ﻿using System;
-using System.Linq;
 
 namespace Owin.Routing
 {
 	/// <summary>
 	/// Mark your method with this attribute to specify route (URL pattern and HTTML methods) to be registered in OWIN pipeline.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Class
-	                | AttributeTargets.Interface
-	                | AttributeTargets.Method
-	                | AttributeTargets.Property
-	                | AttributeTargets.Field
-		, AllowMultiple = true)]
+	[AttributeUsage(AttributeTargets.Method)]
 	public sealed class RouteAttribute : Attribute
 	{
-		public RouteAttribute(string methods, string url)
+		public RouteAttribute(string template)
 		{
-			if (string.IsNullOrEmpty(methods)) throw new ArgumentNullException("methods");
-			if (string.IsNullOrEmpty(url)) throw new ArgumentNullException("url");
+			if (string.IsNullOrWhiteSpace(template)) throw new ArgumentNullException("template");
 
-			Methods = (from s in methods.Split(',') let ts = s.Trim() where ts.Length > 0 select ts).ToArray();
-			Url = url;
+			Template = template;
 		}
 
 		/// <summary>
-		/// Specifies HTTP methods.
+		/// Specifies route name.
 		/// </summary>
-		public string[] Methods { get; private set; }
+		public string Name { get; set; }
 
 		/// <summary>
 		/// Specifies URL pattern.
 		/// </summary>
-		public string Url { get; private set; }
+		public string Template { get; private set; }
 	}
 }
