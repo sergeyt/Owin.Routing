@@ -7,53 +7,63 @@ namespace Owin.Routing
 {
 	public static partial class RoutingApi
 	{
-		public static IAppBuilder UseApi<T>(this IAppBuilder app)
-		{
-			return app.UseApi(ctx =>
-			{
-				// TODO dependency injection (pass services to ctor, set properties)
-				var instance = Activator.CreateInstance<T>();
-				return instance;
-			});
-		}
-
 		/// <summary>
-		/// Finds methods marked with <see cref="RouteAttribute"/> and registers routes on reflected methods.
+		/// Registers methods annotated with <see cref="RouteAttribute"/> into routing pipeline.
 		/// </summary>
 		/// <typeparam name="T">Type to reflect.</typeparam>
 		/// <param name="app">The OWIN pipeline builder.</param>
-		/// <param name="getInstance">Functor to get instance of T.</param>
+		public static IAppBuilder UseApi<T>(this IAppBuilder app)
+		{
+			var init = DependencyInjection.CompileInitFunc(typeof(T));
+			return app.UseApi(init);
+		}
+
+		/// <summary>
+		/// Registers methods annotated with <see cref="RouteAttribute"/> into routing pipeline.
+		/// </summary>
+		/// <typeparam name="T">Type to reflect.</typeparam>
+		/// <param name="app">The OWIN pipeline builder.</param>
+		/// <param name="getInstance">Function to get instance of T.</param>
 		public static IAppBuilder UseApi<T>(this IAppBuilder app, Func<IOwinContext, T> getInstance)
 		{
 			if (app == null) throw new ArgumentNullException("app");
 			if (getInstance == null) throw new ArgumentNullException("getInstance");
 
-			var methods = typeof(T)
-				.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static)
-				.Where(m => m.HasAttribute<RouteAttribute>())
-				.ToList();
+			var type = typeof(T);
+			var prefixAttr = type.GetAttribute<RoutePrefixAttribute>();
+			var prefix = prefixAttr != null ? prefixAttr.Prefix : string.Empty;
 
-			methods.ForEach(method =>
+			const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+
+			var actions = (from m in type.GetMethods(bindingFlags)
+				let route = m.GetAttribute<RouteAttribute>()
+				where route != null
+				select new {Method = m, Route = route}).ToList();
+
+			actions.ForEach(a =>
 			{
-				var invoke = DynamicMethods.CompileMethod(typeof(T), method);
-				var mapper = ParameterMapper.Build(method);
+				var invoke = DynamicMethods.CompileMethod(type, a.Method);
+				var mapper = ParameterMapper.Build(a.Method);
 
-				method.GetAttributes<RouteAttribute>()
-					.ToList()
-					.ForEach(attr =>
-					{
-						var verb = GetHttpMethod(method);
-						app.Route(attr.Template).Register(verb, async ctx =>
-						{
-							var args = mapper(ctx);
-							var instance = method.IsStatic ? (object) null : getInstance(ctx);
-							var result = invoke(instance, args);
-							await ctx.WriteJson(result);
-						});
-					});
+				var verb = GetHttpMethod(a.Method);
+				var pattern = AddPrefix(prefix, a.Route.Template);
+
+				app.Route(pattern).Register(verb, async ctx =>
+				{
+					var args = mapper(ctx);
+					var instance = a.Method.IsStatic ? (object) null : getInstance(ctx);
+					var result = invoke(instance, args);
+					await ctx.WriteJson(result);
+				});
 			});
 
 			return app;
+		}
+
+		private static string AddPrefix(string prefix, string pattern)
+		{
+			if (string.IsNullOrEmpty(prefix)) return pattern;
+			return prefix.TrimEnd('/') + '/' + pattern.TrimStart('/');
 		}
 
 		private static string GetHttpMethod(MethodInfo method)

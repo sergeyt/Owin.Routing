@@ -3,7 +3,7 @@
 namespace Owin.Routing
 {
 	/// <summary>
-	/// Mark your method with this attribute to specify route (URL pattern and HTTML methods) to be registered in OWIN pipeline.
+	/// Apply this attribute to method to specify that this method is REST handler for given URL pattern.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Method)]
 	public sealed class RouteAttribute : Attribute
@@ -24,5 +24,21 @@ namespace Owin.Routing
 		/// Specifies URL pattern.
 		/// </summary>
 		public string Template { get; private set; }
+	}
+
+	/// <summary>
+	/// Annotates an class with REST handlers with a route prefix that applies to actions that have any <see cref="RouteAttribute"/>s on them.
+	/// </summary>
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+	public sealed class RoutePrefixAttribute : Attribute
+	{
+		public RoutePrefixAttribute(string prefix)
+		{
+			if (string.IsNullOrWhiteSpace(prefix)) throw new ArgumentNullException("prefix");
+
+			Prefix = prefix;
+		}
+
+		public string Prefix { get; private set; }
 	}
 }

@@ -26,6 +26,18 @@ namespace Owin.Routing
 		public static Func<IOwinContext, object> Build(ParameterInfo parameter)
 		{
 			var type = parameter.ParameterType;
+			if (type == typeof(IOwinContext))
+			{
+				return ctx => ctx;
+			}
+			if (type == typeof(IOwinRequest))
+			{
+				return ctx => ctx.Request;
+			}
+			if (type == typeof(IOwinResponse))
+			{
+				return ctx => ctx.Response;
+			}
 			if (type == typeof(Stream))
 			{
 				return ctx => ctx.Request.Body;

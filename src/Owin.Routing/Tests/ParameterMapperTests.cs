@@ -27,6 +27,35 @@ namespace Owin.Routing.Tests
 		}
 
 		[Test]
+		public void MapContext()
+		{
+			var ctx = Mock.Of<IOwinContext>();
+			var mapper = Build("MapContext");
+			var args = mapper(ctx);
+			Assert.AreSame(ctx, args[0]);
+		}
+
+		[Test]
+		public void MapRequest()
+		{
+			var req = Mock.Of<IOwinRequest>();
+			var ctx = Mock.Of<IOwinContext>(x => x.Request == req);
+			var mapper = Build("MapRequest");
+			var args = mapper(ctx);
+			Assert.AreSame(req, args[0]);
+		}
+
+		[Test]
+		public void MapResponse()
+		{
+			var res = Mock.Of<IOwinResponse>();
+			var ctx = Mock.Of<IOwinContext>(x => x.Response == res);
+			var mapper = Build("MapResponse");
+			var args = mapper(ctx);
+			Assert.AreSame(res, args[0]);
+		}
+
+		[Test]
 		public void MapStream()
 		{
 			var ctx = new Mock<IOwinContext>();
@@ -210,6 +239,9 @@ namespace Owin.Routing.Tests
 
 		private sealed class Entity
 		{
+			public void MapContext(IOwinContext context) { }
+			public void MapRequest(IOwinRequest request) { }
+			public void MapResponse(IOwinResponse response) { }
 			public void MapStream(Stream input) { }
 			public void MapByteArray(byte[] input) { }
 			public void MapJToken(JToken input) { }
