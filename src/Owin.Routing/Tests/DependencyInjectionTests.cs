@@ -13,7 +13,7 @@ namespace Owin.Routing.Tests
 		[TestCase(typeof(Module2))]
 		public void TestInjection(Type type)
 		{
-			var init = DependencyInjection.CompileInitFunc(type);
+			var init = DependencyInjection.CompileInitializer(type);
 
 			var logger = Mock.Of<ILogger>();
 			var store = Mock.Of<IStore>(s => s.GetItems() == new[] {"a", "b", "c"});

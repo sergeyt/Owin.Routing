@@ -10,6 +10,22 @@ namespace Owin.Routing
 	/// </summary>
 	internal static class DynamicMethods
 	{
+		public static Func<object[], object> CompileConstructor(ConstructorInfo ctor)
+		{
+			var parameter = Expression.Parameter(typeof(object[]), "args");
+
+			var args = ctor.GetParameters().Select((p, i) =>
+			{
+				var item = Expression.ArrayIndex(parameter, Expression.Constant(i));
+				return Expression.Convert(item, p.ParameterType);
+			});
+
+			var create = Expression.Convert(Expression.New(ctor, args), typeof(object));
+			var lambda = Expression.Lambda<Func<object[], object>>(create, parameter);
+
+			return lambda.Compile();
+		}
+
 		public static Action<object, object> CompileSetter(Type type, MemberInfo member)
 		{
 			var property = member as PropertyInfo;

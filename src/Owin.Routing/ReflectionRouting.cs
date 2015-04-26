@@ -14,7 +14,7 @@ namespace Owin.Routing
 		/// <param name="app">The OWIN pipeline builder.</param>
 		public static IAppBuilder UseApi<T>(this IAppBuilder app)
 		{
-			var init = DependencyInjection.CompileInitFunc(typeof(T));
+			var init = DependencyInjection.CompileInitializer(typeof(T));
 			return app.UseApi(init);
 		}
 

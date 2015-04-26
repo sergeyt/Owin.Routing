@@ -10,7 +10,7 @@ namespace Owin.Routing
 	/// </summary>
 	public static class DependencyInjection
 	{
-		internal static Func<IOwinContext, object> CompileInitFunc(Type type)
+		internal static Func<IOwinContext, object> CompileInitializer(Type type)
 		{
 			var ctors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
 			if (ctors.Length > 1)
@@ -21,6 +21,7 @@ namespace Owin.Routing
 			}
 
 			var ctor = ctors[0];
+			var create = DynamicMethods.CompileConstructor(ctor);
 			var paramTypes = (from p in ctor.GetParameters() select p.ParameterType).ToArray();
 
 			var props = (from p in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -45,8 +46,7 @@ namespace Owin.Routing
 				};
 
 				var args = (from t in paramTypes select resolveDep(t)).ToArray();
-				// TODO optimize object instantiation with compiled lambda
-				var instance = ctor.Invoke(args);
+				var instance = create(args);
 
 				foreach (var prop in props)
 				{
