@@ -22,12 +22,11 @@ This class providers fluent API to handlers for specific HTTP verbs (GET, POST, 
 
 RouteBuilder methods:
 
-`using HandlerFunc = Func<IOwinContext, RouteData, Task>`
+`using HandlerFunc = Func<IOwinContext, Task>`
 
 * `RouteBuilder Get(HandlerFunc handler)` - set GET handler.
 * `RouteBuilder Post(HandlerFunc handler)` - set POST handler.
 * `RouteBuilder Put(HandlerFunc handler)` - set PUT handler.
-* `RouteBuilder Update(HandlerFunc handler)` - set UPDATE handler.
 * `RouteBuilder Patch(HandlerFunc handler)` - set PATCH handler.
 * `RouteBuilder Delete(HandlerFunc handler)` - set DELETE handler.
 
