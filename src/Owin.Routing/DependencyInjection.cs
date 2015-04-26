@@ -10,6 +10,12 @@ namespace Owin.Routing
 	/// </summary>
 	public static class DependencyInjection
 	{
+		internal static Func<IOwinContext, T> CompileInitializer<T>()
+		{
+			var init = CompileInitializer(typeof(T));
+			return ctx => (T) init(ctx);
+		}
+
 		internal static Func<IOwinContext, object> CompileInitializer(Type type)
 		{
 			var ctors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.Owin;
 
 namespace Owin.Routing
@@ -14,7 +15,7 @@ namespace Owin.Routing
 		/// <param name="app">The OWIN pipeline builder.</param>
 		public static IAppBuilder UseApi<T>(this IAppBuilder app)
 		{
-			var init = DependencyInjection.CompileInitializer(typeof(T));
+			var init = DependencyInjection.CompileInitializer<T>();
 			return app.UseApi(init);
 		}
 
@@ -44,6 +45,9 @@ namespace Owin.Routing
 			{
 				var invoke = DynamicMethods.CompileMethod(type, a.Method);
 				var mapper = ParameterMapper.Build(a.Method);
+				var returnType = a.Method.ReturnType;
+				var isAsync = returnType == typeof(Task) ||
+				              (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>));
 
 				var verb = GetHttpMethod(a.Method);
 				var pattern = AddPrefix(prefix, a.Route.Template);
@@ -53,6 +57,10 @@ namespace Owin.Routing
 					var args = mapper(ctx);
 					var instance = a.Method.IsStatic ? (object) null : getInstance(ctx);
 					var result = invoke(instance, args);
+					if (isAsync)
+					{
+						result = await (dynamic) result;
+					}
 					await ctx.WriteJson(result);
 				});
 			});
