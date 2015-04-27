@@ -48,6 +48,7 @@ namespace Owin.Routing
 				var returnType = a.Method.ReturnType;
 				var isAsync = returnType == typeof(Task) ||
 				              (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>));
+				var hasResult = !(returnType == typeof(void) || returnType == typeof(Task));
 
 				var verb = GetHttpMethod(a.Method);
 				var pattern = AddPrefix(prefix, a.Route.Template);
@@ -61,7 +62,10 @@ namespace Owin.Routing
 					{
 						result = await (dynamic) result;
 					}
-					await ctx.WriteJson(result);
+					if (hasResult)
+					{
+						await ctx.WriteJson(result);
+					}
 				});
 			});
 
