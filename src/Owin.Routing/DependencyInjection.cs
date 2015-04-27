@@ -45,6 +45,7 @@ namespace Owin.Routing
 				var serviceProvider = GetServiceProvider(ctx);
 				Func<Type, object> resolveDep = t =>
 				{
+					if (t == typeof(IServiceProvider)) return serviceProvider;
 					if (t == typeof(IOwinContext)) return ctx;
 					if (t == typeof(IOwinRequest)) return ctx.Request;
 					if (t == typeof(IOwinResponse)) return ctx.Response;
