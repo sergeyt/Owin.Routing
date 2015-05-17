@@ -177,9 +177,10 @@ namespace Owin.Routing
 		/// </summary>
 		/// <param name="context">The OWIN context.</param>
 		/// <param name="value">The value to serialize.</param>
-		public static async Task WriteJson(this IOwinContext context, object value)
+		/// <param name="serializerSettings">The serializer settings.</param>
+		public static async Task WriteJson(this IOwinContext context, object value, JsonSerializerSettings serializerSettings = null)
 		{
-			var json = JsonConvert.SerializeObject(value, Json.Settings);
+			var json = JsonConvert.SerializeObject(value, serializerSettings ?? Json.Settings);
 			const string contentType = "application/json";
 			context.Response.Headers.Set("Content-Type", contentType);
 			context.Response.Headers.Set("Content-Encoding", "utf8");

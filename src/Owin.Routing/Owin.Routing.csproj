@@ -85,6 +85,7 @@
     <Compile Include="RouteAttribute.cs" />
     <Compile Include="RouteBuilder.cs" />
     <Compile Include="RoutingApi.cs" />
+    <Compile Include="ResponseSerializerSettingsAttribute.cs" />
     <Compile Include="Tests\ConvertTests.cs" />
     <Compile Include="Tests\DependencyInjectionTests.cs" />
     <Compile Include="Tests\DynamicMethodsTests.cs" />

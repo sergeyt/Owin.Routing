@@ -4,6 +4,7 @@ using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Owin;
+using Newtonsoft.Json;
 
 namespace Owin.Routing
 {
@@ -34,6 +35,11 @@ namespace Owin.Routing
 			var type = typeof(T);
 			var prefixAttr = type.GetAttribute<RoutePrefixAttribute>();
 			var prefix = prefixAttr != null ? prefixAttr.Prefix : string.Empty;
+
+			var serializerSettings = type.GetProperties(BindingFlags.Static | BindingFlags.Public)
+				.Where(p => p.HasAttribute<ResponseSerializerSettingsAttribute>() && p.PropertyType == typeof(JsonSerializerSettings))
+				.Select(p => p.GetValue(null) as JsonSerializerSettings)
+				.FirstOrDefault();
 
 			const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 
@@ -80,7 +86,7 @@ namespace Owin.Routing
 					}
 					if (hasResult && result != null)
 					{
-						await ctx.WriteJson(result);
+						await ctx.WriteJson(result, serializerSettings);
 					}
 				});
 			});
