@@ -24,7 +24,7 @@ namespace Owin.Routing
 			{
 				var args = ParameterMapper.Build(ctor);
 				// TODO build expression tree to create instance
-				return ctx => ctor.Invoke(null, args(ctx));
+				return ctx => ctor.Invoke(args(ctx));
 			}
 
 			var props = type
