@@ -78,7 +78,7 @@ namespace Owin.Routing
 							await (dynamic) result;
 						}
 					}
-					if (hasResult)
+					if (hasResult && result != null)
 					{
 						await ctx.WriteJson(result);
 					}
