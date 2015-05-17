@@ -69,7 +69,14 @@ namespace Owin.Routing
 					var result = invoke(instance, args);
 					if (isAsync)
 					{
-						result = await (dynamic) result;
+						if (hasResult)
+						{
+							result = await (dynamic) result;
+						}
+						else
+						{
+							await (dynamic) result;
+						}
 					}
 					if (hasResult)
 					{
