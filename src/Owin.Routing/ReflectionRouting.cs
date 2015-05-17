@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Owin;
@@ -55,7 +56,15 @@ namespace Owin.Routing
 
 				app.Route(pattern).Register(verb, async ctx =>
 				{
-					var args = mapper(ctx);
+					string error;
+					var args = MapParameters(ctx, mapper, out error);
+					if (error != null)
+					{
+						ctx.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+						await ctx.WriteJson(new { error });
+						return;
+					}
+
 					var instance = a.Method.IsStatic ? (object) null : getInstance(ctx);
 					var result = invoke(instance, args);
 					if (isAsync)
@@ -70,6 +79,20 @@ namespace Owin.Routing
 			});
 
 			return app;
+		}
+
+		private static object[] MapParameters(IOwinContext ctx, Func<IOwinContext, object[]> mapper, out string error)
+		{
+			error = null;
+			try
+			{
+				return mapper(ctx);
+			}
+			catch (FormatException e)
+			{
+				error = e.Message;
+				return null;
+			}
 		}
 
 		private static string AddPrefix(string prefix, string pattern)
