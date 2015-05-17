@@ -41,6 +41,9 @@ namespace Owin.Routing
 	{
 		public static object ToType(this object value, Type type)
 		{
+			if (null == value)
+				return type.DefaultValue();
+
 			if (type.IsInstanceOfType(value))
 			{
 				return value;
@@ -90,6 +93,19 @@ namespace Owin.Routing
 		public static T ToEnum<T>(this object value)
 		{
 			return (T)value.ToEnum(typeof(T));
+		}
+
+		public static Array ToArrayOfType(this IEnumerable<object> enumerable, Type type)
+		{
+			var arr = enumerable.ToArray();
+			var result = Array.CreateInstance(type, arr.Length);
+			Array.Copy(arr, result, arr.Length);
+			return result;
+		}
+
+		public static object DefaultValue(this Type type)
+		{
+			return type.IsValueType ? Activator.CreateInstance(type) : null;
 		}
 	}
 

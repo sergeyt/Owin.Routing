@@ -86,33 +86,65 @@ namespace Owin.Routing
 				};
 			}
 
-			if (IsPrimitive(type))
+			if (IsPrimitive(type) || IsNullable(type) && IsPrimitive(Nullable.GetUnderlyingType(type)))
 			{
 				return ctx =>
 				{
-					var s = ctx.GetRouteValue(parameter.Name);
-					if (!string.IsNullOrEmpty(s))
-					{
-						return s.ToType(type);
-					}
-
-					s = ctx.Request.Query.Get(parameter.Name);
-					if (!string.IsNullOrEmpty(s))
-					{
-						return s.ToType(type);
-					}
-
-					if (!ctx.Request.Method.Equals("GET", StringComparison.OrdinalIgnoreCase))
-					{
-						return ctx.JsonBody().Value<object>(parameter.Name).ToType(type);
-					}
-
+					var val = FindParameterValue(ctx, parameter.Name);
 					// TODO default value attribute
-					return s.ToType(type);
+					return val.ToType(type);
+				};
+			}
+
+			if (type.IsArray && IsPrimitive(type.GetElementType()))
+			{
+				var itemType = type.GetElementType();
+				return ctx =>
+				{
+					var val = FindParameterValue(ctx, parameter.Name);
+					var strVal = val as string;
+					if (!string.IsNullOrEmpty(strVal))
+					{
+						return strVal.Split(',').Select(item => item.ToType(itemType)).ToArrayOfType(itemType);
+					}
+					var jarray = val as JArray;
+					if (null != jarray)
+					{
+						return jarray.Values<object>().Select(item => item.ToType(itemType)).ToArrayOfType(itemType);
+					}
+					// TODO default value attribute
+					return null;
 				};
 			}
 
 			return RequestMapper.Build(type);
+		}
+
+		private static object FindParameterValue(IOwinContext ctx, string parameterName)
+		{
+			var s = ctx.GetRouteValue(parameterName);
+			if (!string.IsNullOrEmpty(s))
+			{
+				return s;
+			}
+
+			s = ctx.Request.Query.Get(parameterName);
+			if (!string.IsNullOrEmpty(s))
+			{
+				return s;
+			}
+
+			if (!ctx.Request.Method.Equals("GET", StringComparison.OrdinalIgnoreCase))
+			{
+				var jsonBody = ctx.JsonBody() as JObject;
+				if (null != jsonBody)
+				{
+					var value = jsonBody.GetValue(parameterName, StringComparison.InvariantCultureIgnoreCase);
+					if (null != value)
+						return value.ToObject<object>();
+				}
+			}
+			return null;
 		}
 
 		private static bool IsPrimitive(Type type)
@@ -138,6 +170,11 @@ namespace Owin.Routing
 				default:
 					return false;
 			}
+		}
+
+		private static bool IsNullable(Type type)
+		{
+			return type.IsGenericType && type.GetGenericTypeDefinition() == typeof (Nullable<>);
 		}
 	}
 }
