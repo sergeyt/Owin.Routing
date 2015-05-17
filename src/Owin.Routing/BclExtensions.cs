@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace Owin.Routing
@@ -11,7 +13,7 @@ namespace Owin.Routing
 	{
 		public static T[] GetAttributes<T>(this ICustomAttributeProvider provider, bool inherit = true) where T : Attribute
 		{
-			return (T[])provider.GetCustomAttributes(typeof(T), inherit);
+			return provider.GetCustomAttributes(typeof(T), inherit).Cast<T>().ToArray();
 		}
 
 		public static T GetAttribute<T>(this ICustomAttributeProvider provider, bool inherit = true) where T : Attribute
