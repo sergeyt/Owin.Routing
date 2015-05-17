@@ -168,6 +168,8 @@ namespace Owin.Routing
 				case TypeCode.String:
 					return true;
 				default:
+					if (typeof (Guid) == type)
+						return true;
 					return false;
 			}
 		}
