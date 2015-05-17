@@ -64,25 +64,19 @@ namespace Owin.Routing
 				return ctx => ctx.JsonBody().ToObject(type, Json.CreateSerializer());
 			}
 
+			var mapAttribute = parameter.GetAttribute<MapAttribute>();
+			if (null != mapAttribute)
+			{
+				return ctx => MapParameter(ctx, mapAttribute.Target, mapAttribute.Name ?? parameter.Name, type);
+			}
+
 			var bindings = parameter.GetAttribute<BindingsAttribute>();
 			if (bindings != null)
 			{
 				return ctx =>
 				{
 					var binding = bindings.GetBinding(ctx.Request.Method, parameter.Name);
-					switch (binding.Source)
-					{
-						case RequestElement.Route:
-							return ctx.GetRouteValue(binding.Name).ToType(type);
-						case RequestElement.Query:
-							return ctx.Request.Query.Get(binding.Name).ToType(type);
-						case RequestElement.Header:
-							return ctx.Request.Headers.Get(binding.Name).ToType(type);
-						case RequestElement.Body:
-							return ctx.JsonBody().Value<object>(binding.Name).ToType(type);
-						default:
-							throw new NotSupportedException();
-					}
+					return MapParameter(ctx, binding.Source, binding.Name, type);
 				};
 			}
 
@@ -118,6 +112,23 @@ namespace Owin.Routing
 			}
 
 			return RequestMapper.Build(type);
+		}
+
+		private static object MapParameter(IOwinContext ctx, RequestElement source, string parameterName, Type type)
+		{
+			switch (source)
+			{
+				case RequestElement.Route:
+					return ctx.GetRouteValue(parameterName).ToType(type);
+				case RequestElement.Query:
+					return ctx.Request.Query.Get(parameterName).ToType(type);
+				case RequestElement.Header:
+					return ctx.Request.Headers.Get(parameterName).ToType(type);
+				case RequestElement.Body:
+					return ctx.JsonBody().Value<object>(parameterName).ToType(type);
+				default:
+					throw new NotSupportedException();
+			}
 		}
 
 		private static object FindParameterValue(IOwinContext ctx, string parameterName)
