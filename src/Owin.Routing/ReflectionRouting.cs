@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Owin;
+using Newtonsoft.Json;
 
 namespace Owin.Routing
 {
@@ -34,6 +36,11 @@ namespace Owin.Routing
 			var prefixAttr = type.GetAttribute<RoutePrefixAttribute>();
 			var prefix = prefixAttr != null ? prefixAttr.Prefix : string.Empty;
 
+			var serializerSettings = type.GetProperties(BindingFlags.Static | BindingFlags.Public)
+				.Where(p => p.HasAttribute<ResponseSerializerSettingsAttribute>() && p.PropertyType == typeof(JsonSerializerSettings))
+				.Select(p => p.GetValue(null) as JsonSerializerSettings)
+				.FirstOrDefault();
+
 			const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 
 			var actions = (from m in type.GetMethods(bindingFlags)
@@ -55,21 +62,50 @@ namespace Owin.Routing
 
 				app.Route(pattern).Register(verb, async ctx =>
 				{
-					var args = mapper(ctx);
+					string error;
+					var args = MapParameters(ctx, mapper, out error);
+					if (error != null)
+					{
+						ctx.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+						await ctx.WriteJson(new { error });
+						return;
+					}
+
 					var instance = a.Method.IsStatic ? (object) null : getInstance(ctx);
 					var result = invoke(instance, args);
 					if (isAsync)
 					{
-						result = await (dynamic) result;
+						if (hasResult)
+						{
+							result = await (dynamic) result;
+						}
+						else
+						{
+							await (dynamic) result;
+						}
 					}
-					if (hasResult)
+					if (hasResult && result != null)
 					{
-						await ctx.WriteJson(result);
+						await ctx.WriteJson(result, serializerSettings);
 					}
 				});
 			});
 
 			return app;
+		}
+
+		private static object[] MapParameters(IOwinContext ctx, Func<IOwinContext, object[]> mapper, out string error)
+		{
+			error = null;
+			try
+			{
+				return mapper(ctx);
+			}
+			catch (FormatException e)
+			{
+				error = e.Message;
+				return null;
+			}
 		}
 
 		private static string AddPrefix(string prefix, string pattern)

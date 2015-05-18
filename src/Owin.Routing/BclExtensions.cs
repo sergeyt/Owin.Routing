@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace Owin.Routing
@@ -11,7 +13,7 @@ namespace Owin.Routing
 	{
 		public static T[] GetAttributes<T>(this ICustomAttributeProvider provider, bool inherit = true) where T : Attribute
 		{
-			return (T[])provider.GetCustomAttributes(typeof(T), inherit);
+			return provider.GetCustomAttributes(typeof(T), inherit).Cast<T>().ToArray();
 		}
 
 		public static T GetAttribute<T>(this ICustomAttributeProvider provider, bool inherit = true) where T : Attribute
@@ -39,6 +41,9 @@ namespace Owin.Routing
 	{
 		public static object ToType(this object value, Type type)
 		{
+			if (null == value)
+				return type.DefaultValue();
+
 			if (type.IsInstanceOfType(value))
 			{
 				return value;
@@ -88,6 +93,19 @@ namespace Owin.Routing
 		public static T ToEnum<T>(this object value)
 		{
 			return (T)value.ToEnum(typeof(T));
+		}
+
+		public static Array ToArrayOfType(this IEnumerable<object> enumerable, Type type)
+		{
+			var arr = enumerable.ToArray();
+			var result = Array.CreateInstance(type, arr.Length);
+			Array.Copy(arr, result, arr.Length);
+			return result;
+		}
+
+		public static object DefaultValue(this Type type)
+		{
+			return type.IsValueType ? Activator.CreateInstance(type) : null;
 		}
 	}
 
