@@ -60,6 +60,16 @@ namespace Tests
 			}
 		}
 
+		[Test]
+		public async void CheckAsyncMethodInternalApi()
+		{
+			using (var server = TestServer.Create(app => app.UseApi<InternalAsyncApi>()))
+			{
+				var s = await server.HttpClient.GetStringAsync("items/123");
+				Assert.AreEqual(@"{""Key"":""123""}", s);
+			}
+		}
+
 		public class AsyncApi
 		{
 			[Route("items/{key}")]
@@ -68,6 +78,21 @@ namespace Tests
 				await Task.Delay(1);
 				return key;
 			}
+		}
+
+		internal class InternalAsyncApi
+		{
+			[Route("items/{key}")]
+			public async Task<Result> GetResult(string key)
+			{
+				await Task.Delay(1);
+				return new Result { Key = key};
+			}
+		}
+
+		internal class Result
+		{
+			public string Key { get; set; }
 		}
 
 		public interface ILicenseManager
