@@ -77,7 +77,7 @@ namespace Owin.Routing
 					{
 						if (hasResult)
 						{
-							result = await (dynamic) result;
+							result = await ToTaskOfObject((Task) result);
 						}
 						else
 						{
@@ -92,6 +92,15 @@ namespace Owin.Routing
 			});
 
 			return app;
+		}
+
+		private static Task<object> ToTaskOfObject(Task task)
+		{
+			return task.ContinueWith(t =>
+			{
+				var resultProp = task.GetType().GetProperty("Result", BindingFlags.Public | BindingFlags.Instance);
+				return resultProp.GetValue(t);
+			});
 		}
 
 		private static object[] MapParameters(IOwinContext ctx, Func<IOwinContext, object[]> mapper, out string error)
