@@ -161,6 +161,22 @@ namespace Owin.Routing.Tests
 		}
 
 		[Test]
+		public void MapRouteArray()
+		{
+			var data = new RouteData { Values = { { "values", "a,b,c" } } };
+
+			var ctx = new Mock<IOwinContext>();
+			ctx.Setup(x => x.Get<RouteData>(Keys.RouteData)).Returns(data);
+
+			var mapper = Build("MapRouteArray");
+			var args = mapper(ctx.Object);
+			var array = args[0] as string[];
+			CollectionAssert.AreEqual(new [] { "a","b", "c"}, array);
+
+			ctx.Verify(x => x.Get<RouteData>(Keys.RouteData), Times.Once);
+		}
+
+		[Test]
 		public void MapQuery()
 		{
 			var query = Mock.Of<IReadableStringCollection>(c => c.Get("value") == "test");
@@ -210,6 +226,21 @@ namespace Owin.Routing.Tests
 		}
 
 		[Test]
+		public void MapJsonValueLowCase()
+		{
+			var ctx = new Mock<IOwinContext>();
+			ctx.Setup(x => x.Request.Method).Returns("GET");
+			ctx.Setup(x => x.Request.Body).Returns(_jsonStream);
+
+			var mapper = Build("MapJsonValueLowCase");
+			var args = mapper(ctx.Object);
+			Assert.AreEqual("test", args[0]);
+
+			ctx.Verify(x => x.Request.Method, Times.Once);
+			ctx.Verify(x => x.Request.Body, Times.Once);
+		}
+
+		[Test]
 		public void MapOptions()
 		{
 			var data = new RouteData { Values = { { "Name", "test" } } };
@@ -250,9 +281,11 @@ namespace Owin.Routing.Tests
 
 			public void MapRoute([Bindings("route")] string value) { }
 			public void MapRouteDefault(string value) { }
+			public void MapRouteArray(string[] values) { }
 			public void MapQuery([Bindings("query")] string value) { }
 			public void MapHeader([Bindings("header")] string value) { }
 			public void MapJsonValue([Bindings("body.Name")] string value) { }
+			public void MapJsonValueLowCase([Bindings("body.name")] string value) { }
 
 			public void MapOptions(Options options) { }
 		}

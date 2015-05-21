@@ -22,6 +22,9 @@ namespace Owin.Routing.Tests
 			Assert.AreEqual(ItemKind.Simple, 0.ToType<ItemKind>());
 			Assert.AreEqual(ItemKind.Simple, "0".ToType<ItemKind>());
 			Assert.AreEqual(ItemKind.Simple, nil.ToType<ItemKind>());
+
+			var nullable = "123".ToType(typeof (int?));
+			Assert.AreEqual(nullable, 123);
 		}
 
 		private enum ItemKind { Simple, Complex }
