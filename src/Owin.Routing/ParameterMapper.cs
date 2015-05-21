@@ -125,7 +125,7 @@ namespace Owin.Routing
 				case RequestElement.Header:
 					return ctx.Request.Headers.Get(parameterName).ToType(type);
 				case RequestElement.Body:
-					return ctx.JsonBody().Value<object>(parameterName).ToType(type);
+					return ctx.GetBodyValue(parameterName).ToType(type);
 				default:
 					throw new NotSupportedException();
 			}
@@ -147,13 +147,19 @@ namespace Owin.Routing
 
 			if (!ctx.Request.Method.Equals("GET", StringComparison.OrdinalIgnoreCase))
 			{
-				var jsonBody = ctx.JsonBody() as JObject;
-				if (null != jsonBody)
-				{
-					var value = jsonBody.GetValue(parameterName, StringComparison.InvariantCultureIgnoreCase);
-					if (null != value)
-						return value.ToObject<object>();
-				}
+				return ctx.GetBodyValue(parameterName);
+			}
+			return null;
+		}
+
+		private static object GetBodyValue(this IOwinContext ctx, string name)
+		{
+			var jsonBody = ctx.JsonBody() as JObject;
+			if (null != jsonBody)
+			{
+				var value = jsonBody.GetValue(name, StringComparison.InvariantCultureIgnoreCase);
+				if (null != value)
+					return value.ToObject<object>();
 			}
 			return null;
 		}
