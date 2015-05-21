@@ -3,8 +3,13 @@
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("TsvBits")]
 [assembly: AssemblyProduct("Owin.Routing")]
-[assembly: AssemblyCopyright("Copyright © Sergey Todyshev 2014")]
+[assembly: AssemblyCopyright("Copyright © Sergey Todyshev 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: AssemblyVersion("0.6.1.0")]
-[assembly: AssemblyFileVersion("0.6.1.0")]
+[assembly: AssemblyVersion(AssemblyInfo.Version)]
+[assembly: AssemblyFileVersion(AssemblyInfo.Version)]
+
+static class AssemblyInfo
+{
+	public const string Version = "0.6.2.0";
+}
