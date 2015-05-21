@@ -60,7 +60,7 @@ namespace Owin.Routing
 			}
 
 			var c = value as IConvertible;
-			if (c != null)
+			if (c != null && !type.IsNullable())
 			{
 				return Convert.ChangeType(value, type);
 			}
@@ -106,6 +106,11 @@ namespace Owin.Routing
 		public static object DefaultValue(this Type type)
 		{
 			return type.IsValueType ? Activator.CreateInstance(type) : null;
+		}
+
+		public static bool IsNullable(this Type type)
+		{
+			return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
 		}
 	}
 

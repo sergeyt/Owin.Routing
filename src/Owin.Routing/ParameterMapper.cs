@@ -80,7 +80,7 @@ namespace Owin.Routing
 				};
 			}
 
-			if (IsPrimitive(type) || IsNullable(type) && IsPrimitive(Nullable.GetUnderlyingType(type)))
+			if (IsPrimitive(type) || type.IsNullable() && IsPrimitive(Nullable.GetUnderlyingType(type)))
 			{
 				return ctx =>
 				{
@@ -183,11 +183,6 @@ namespace Owin.Routing
 						return true;
 					return false;
 			}
-		}
-
-		private static bool IsNullable(Type type)
-		{
-			return type.IsGenericType && type.GetGenericTypeDefinition() == typeof (Nullable<>);
 		}
 	}
 }
