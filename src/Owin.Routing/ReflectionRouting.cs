@@ -53,10 +53,7 @@ namespace Owin.Routing
 				var invoke = DynamicMethods.CompileMethod(type, a.Method);
 				var mapper = ParameterMapper.Build(a.Method);
 				var returnType = a.Method.ReturnType;
-				var isAsync = returnType == typeof(Task) ||
-				              (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>));
-				var hasResult = !(returnType == typeof(void) || returnType == typeof(Task));
-
+				
 				var verb = GetHttpMethod(a.Method);
 				var pattern = AddPrefix(prefix, a.Route.Template);
 
@@ -73,18 +70,14 @@ namespace Owin.Routing
 
 					var instance = a.Method.IsStatic ? (object) null : getInstance(ctx);
 					var result = invoke(instance, args);
-					if (isAsync)
+
+					var task = result as Task;
+					if (null != task)
 					{
-						if (hasResult)
-						{
-							result = await ToTaskOfObject((Task) result);
-						}
-						else
-						{
-							await (dynamic) result;
-						}
+						result = await HandleAsyncResult(task, returnType);
 					}
-					if (hasResult && result != null)
+
+					if (result != null)
 					{
 						await ctx.WriteJson(result, serializerSettings);
 					}
@@ -94,9 +87,20 @@ namespace Owin.Routing
 			return app;
 		}
 
-		private static Task<object> ToTaskOfObject(Task task)
+		private static async Task<object> HandleAsyncResult(Task task, Type taskType)
 		{
-			return task.ContinueWith(t =>
+			var hasResult = taskType.IsGenericType && taskType.GetGenericTypeDefinition() == typeof(Task<>);
+
+			if (!hasResult)
+			{
+				await task;
+				return null;
+			}
+
+			if (taskType.GetGenericArguments().All(argType => argType.IsPublic))
+				return await (dynamic) task;
+
+			return await task.ContinueWith(t =>
 			{
 				var resultProp = task.GetType().GetProperty("Result", BindingFlags.Public | BindingFlags.Instance);
 				return resultProp.GetValue(t);
