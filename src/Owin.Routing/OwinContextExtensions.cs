@@ -3,8 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
-using System.Web.Routing;
 using Microsoft.Owin;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -49,8 +47,8 @@ namespace Owin.Routing
 			var data = context.Get<RouteData>(Keys.RouteData);
 			if (data == null) throw new InvalidOperationException();
 
-			var val = data.Values[name];
-			return val.ToType<T>();
+			string val;
+			return data.TryGetValue(name, out val) ? val.ToType<T>() : default(T);
 		}
 
 		/// <summary>
@@ -61,19 +59,6 @@ namespace Owin.Routing
 		public static string GetRouteValue(this IOwinContext context, string name)
 		{
 			return context.GetRouteValue<string>(name);
-		}
-
-		internal static HttpContextBase HttpContext(this IOwinContext ctx)
-		{
-			if (ctx == null) throw new ArgumentNullException("ctx");
-
-			var value = ctx.Get<HttpContextBase>(Keys.HttpContext);
-			if (value == null)
-			{
-				value = new HttpContextImpl(ctx);
-				ctx.Set(Keys.HttpContext, value);
-			}
-			return value;
 		}
 
 		public static byte[] RequestBytes(this IOwinContext context)

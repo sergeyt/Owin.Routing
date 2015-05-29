@@ -3,7 +3,6 @@
 using System;
 using System.IO;
 using System.Text;
-using System.Web.Routing;
 
 using Microsoft.Owin;
 using Newtonsoft.Json.Linq;
@@ -131,7 +130,7 @@ namespace Owin.Routing.Tests
 		[Test]
 		public void MapRoute()
 		{
-			var data = new RouteData {Values = {{"value", "test"}}};
+			var data = new RouteData {{"value", "test"}};
 
 			var ctx = new Mock<IOwinContext>();
 			ctx.Setup(x => x.Get<RouteData>(Keys.RouteData)).Returns(data);
@@ -148,7 +147,7 @@ namespace Owin.Routing.Tests
 		[Test]
 		public void MapRouteDefault()
 		{
-			var data = new RouteData { Values = { { "value", "test" } } };
+			var data = new RouteData {{"value", "test"}};
 
 			var ctx = new Mock<IOwinContext>();
 			ctx.Setup(x => x.Get<RouteData>(Keys.RouteData)).Returns(data);
@@ -163,7 +162,7 @@ namespace Owin.Routing.Tests
 		[Test]
 		public void MapRouteArray()
 		{
-			var data = new RouteData { Values = { { "values", "a,b,c" } } };
+			var data = new RouteData {{"values", "a,b,c"}};
 
 			var ctx = new Mock<IOwinContext>();
 			ctx.Setup(x => x.Get<RouteData>(Keys.RouteData)).Returns(data);
@@ -272,7 +271,7 @@ namespace Owin.Routing.Tests
 		[Test]
 		public void MapOptions()
 		{
-			var data = new RouteData { Values = { { "Name", "test" } } };
+			var data = new RouteData {{"Name", "test"}};
 
 			var ctx = new Mock<IOwinContext>();
 			ctx.Setup(x => x.Get<RouteData>(Keys.RouteData)).Returns(data);

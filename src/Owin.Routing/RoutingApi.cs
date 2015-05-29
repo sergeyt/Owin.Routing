@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using System.Web.Routing;
 using Microsoft.Owin;
 
 namespace Owin.Routing
@@ -11,7 +10,6 @@ namespace Owin.Routing
 	internal static class Keys
 	{
 		public const string RouteData = "owin.routing.data";
-		public const string HttpContext = "owin.routing.httpctx";
 		public const string RequestBytes = "req.bytes";
 		public const string JsonBody = "req.json";
 	}
@@ -25,15 +23,10 @@ namespace Owin.Routing
 		/// Injects route to app pipeline.
 		/// </summary>
 		/// <param name="app">The instance of <see cref="IAppBuilder"/>.</param>
-		/// <param name="url">The url template.</param>
-		public static RouteBuilder Route(this IAppBuilder app, string url)
+		/// <param name="urlTemplate">The url template.</param>
+		public static RouteBuilder Route(this IAppBuilder app, string urlTemplate)
 		{
-			if (app == null) throw new ArgumentNullException("app");
-			if (string.IsNullOrWhiteSpace(url)) throw new ArgumentNullException("url");
-
-			var builder = new RouteBuilder(app);
-			builder.Route = new Route(url, builder);
-			return builder;
+			return new RouteBuilder(app, urlTemplate);
 		}
 
 		#region Shortcuts

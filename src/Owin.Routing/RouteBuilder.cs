@@ -1,26 +1,68 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
-using System.Web.Routing;
 using Microsoft.Owin;
 
 namespace Owin.Routing
 {
 	using AppFunc = Func<IOwinContext, Func<Task>, Task>;
 	using HandlerFunc = Func<IOwinContext, Task>;
-	
+
+	internal sealed class RouteData : Dictionary<string, string>
+	{
+		public RouteData() : base(StringComparer.InvariantCultureIgnoreCase)
+		{
+		}
+	}
+
 	/// <summary>
 	/// Provides fluent API to register http method handlers.
 	/// </summary>
-	public sealed class RouteBuilder : IRouteHandler
+	public sealed class RouteBuilder
 	{
-		internal RouteBuilder(IAppBuilder app)
+		private readonly Func<string, RouteData> _matcher;
+
+		internal RouteBuilder(IAppBuilder app, string urlTemplate)
 		{
+			if (app == null) throw new ArgumentNullException("app");
+			if (string.IsNullOrWhiteSpace(urlTemplate)) throw new ArgumentNullException("urlTemplate");
+
 			App = app;
+
+			// TODO support wildcards when needed
+			var template = (
+				from s in urlTemplate.TrimStart('/').Split('/')
+				// TODO support sinatra style '/resources/:id' templates
+				let isVar = s[0] == '{' && s[s.Length - 1] == '}'
+				select isVar ? new {value = s.Substring(1, s.Length - 2), isVar = true} : new {value = s, isVar = false}
+				).ToArray();
+
+			_matcher = path =>
+			{
+				var segments = path.Split('/');
+				if (segments.Length != template.Length) return null;
+
+				var data = new RouteData();
+
+				for (int i = 0; i < template.Length; i++)
+				{
+					var t = template[i];
+					if (t.isVar)
+					{
+						data[t.value] = segments[i];
+					}
+					else if (!string.Equals(segments[i], t.value, StringComparison.InvariantCultureIgnoreCase))
+					{
+						return null;
+					}
+				}
+
+				return data;
+			};
 		}
 
 		private IAppBuilder App { get; set; }
-		internal Route Route { get; set; }
 
 		private RouteBuilder Register(string method, AppFunc handler)
 		{
@@ -30,8 +72,8 @@ namespace Owin.Routing
 			{
 				if (string.Equals(ctx.Request.Method, method, StringComparison.OrdinalIgnoreCase))
 				{
-					var httpContext = ctx.HttpContext();
-					var data = Route.GetRouteData(httpContext);
+					var path = ctx.Request.Path.Value.TrimStart('/');
+					var data = _matcher(path);
 					if (data != null)
 					{
 						ctx.Set(Keys.RouteData, data);
@@ -166,11 +208,6 @@ namespace Owin.Routing
 		public RouteBuilder Delete(AppFunc handler)
 		{
 			return Register(HttpMethod.Delete, handler);
-		}
-
-		IHttpHandler IRouteHandler.GetHttpHandler(RequestContext requestContext)
-		{
-			throw new NotImplementedException();
 		}
 	}
 }
