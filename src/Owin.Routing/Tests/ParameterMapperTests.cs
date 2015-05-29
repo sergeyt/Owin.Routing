@@ -179,7 +179,7 @@ namespace Owin.Routing.Tests
 		public void MapRouteUnescape()
 		{
 			const string value = "a,b,c";
-			var data = new RouteData { Values = { { "value", Uri.EscapeDataString(value) } } };
+			var data = new RouteData {{"value", Uri.EscapeDataString(value)}};
 
 			var ctx = new Mock<IOwinContext>();
 			ctx.Setup(x => x.Get<RouteData>(Keys.RouteData)).Returns(data);
