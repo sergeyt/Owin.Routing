@@ -119,9 +119,9 @@ namespace Owin.Routing
 			switch (source)
 			{
 				case RequestElement.Route:
-					return ctx.GetRouteValue(parameterName).ToType(type);
+					return ctx.GetRouteValue(parameterName).UnescapeUriString().ToType(type);
 				case RequestElement.Query:
-					return ctx.Request.Query.Get(parameterName).ToType(type);
+					return ctx.Request.Query.Get(parameterName).UnescapeUriString().ToType(type);
 				case RequestElement.Header:
 					return ctx.Request.Headers.Get(parameterName).ToType(type);
 				case RequestElement.Body:
@@ -136,13 +136,13 @@ namespace Owin.Routing
 			var s = ctx.GetRouteValue(parameterName);
 			if (!string.IsNullOrEmpty(s))
 			{
-				return s;
+				return s.UnescapeUriString();
 			}
 
 			s = ctx.Request.Query.Get(parameterName);
 			if (!string.IsNullOrEmpty(s))
 			{
-				return s;
+				return s.UnescapeUriString();
 			}
 
 			if (!ctx.Request.Method.Equals("GET", StringComparison.OrdinalIgnoreCase))
@@ -150,6 +150,11 @@ namespace Owin.Routing
 				return ctx.GetBodyValue(parameterName);
 			}
 			return null;
+		}
+
+		private static string UnescapeUriString(this string s)
+		{
+			return !string.IsNullOrEmpty(s) ? Uri.UnescapeDataString(s) : s;
 		}
 
 		private static object GetBodyValue(this IOwinContext ctx, string name)

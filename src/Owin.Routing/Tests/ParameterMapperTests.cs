@@ -176,6 +176,20 @@ namespace Owin.Routing.Tests
 		}
 
 		[Test]
+		public void MapRouteUnescape()
+		{
+			const string value = "a,b,c";
+			var data = new RouteData {{"value", Uri.EscapeDataString(value)}};
+
+			var ctx = new Mock<IOwinContext>();
+			ctx.Setup(x => x.Get<RouteData>(Keys.RouteData)).Returns(data);
+
+			var mapper = Build("MapRouteDefault");
+			var args = mapper(ctx.Object);
+			Assert.AreEqual(value, args[0]);
+		}
+
+		[Test]
 		public void MapQuery()
 		{
 			var query = Mock.Of<IReadableStringCollection>(c => c.Get("value") == "test");
@@ -190,6 +204,21 @@ namespace Owin.Routing.Tests
 
 			ctx.Verify(x => x.Request.Method, Times.Once);
 			ctx.Verify(x => x.Request.Query, Times.Once);
+		}
+
+		[Test]
+		public void MapQueryUnescape()
+		{
+			const string value = "a,b,c";
+			var query = Mock.Of<IReadableStringCollection>(c => c.Get("value") == Uri.EscapeDataString(value));
+
+			var ctx = new Mock<IOwinContext>();
+			ctx.Setup(x => x.Request.Method).Returns("GET");
+			ctx.Setup(x => x.Request.Query).Returns(query);
+
+			var mapper = Build("MapQuery");
+			var args = mapper(ctx.Object);
+			Assert.AreEqual(value, args[0]);
 		}
 
 		[Test]
