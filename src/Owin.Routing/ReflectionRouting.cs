@@ -97,7 +97,7 @@ namespace Owin.Routing
 				return null;
 			}
 
-			if (taskType.GetGenericArguments().All(argType => argType.IsPublic))
+			if (taskType.GetGenericArguments().All(argType => argType.IsArray ? argType.GetElementType().IsPublic : argType.IsPublic))
 				return await (dynamic) task;
 
 			return await task.ContinueWith(t =>
