@@ -60,13 +60,14 @@ namespace Tests
 			}
 		}
 
-		[Test]
-		public async void CheckAsyncMethodInternalApi()
+		[TestCase("item", @"{""Key"":""123""}")]
+		[TestCase("array", @"[{""Key"":""123""}]")]
+		public async void CheckAsyncMethodInternalApi(string path, string expected)
 		{
 			using (var server = TestServer.Create(app => app.UseApi<InternalAsyncApi>()))
 			{
-				var s = await server.HttpClient.GetStringAsync("items/123");
-				Assert.AreEqual(@"{""Key"":""123""}", s);
+				var s = await server.HttpClient.GetStringAsync(path);
+				Assert.AreEqual(expected, s);
 			}
 		}
 
@@ -82,17 +83,22 @@ namespace Tests
 
 		internal class InternalAsyncApi
 		{
-			[Route("items/{key}")]
-			public async Task<Result> GetResult(string key)
+			[Route("item")]
+			public async Task<Internal> GetResult()
 			{
-				await Task.Delay(1);
-				return new Result { Key = key};
+				return await Task.FromResult(new Internal());
+			}
+
+			[Route("array")]
+			public async Task<Internal[]> GetArray()
+			{
+				return await Task.FromResult(new []{ new Internal() });
 			}
 		}
 
-		internal class Result
+		internal class Internal
 		{
-			public string Key { get; set; }
+			public string Key { get { return "123"; } }
 		}
 
 		public interface ILicenseManager
