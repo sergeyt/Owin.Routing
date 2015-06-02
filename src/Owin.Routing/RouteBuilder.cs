@@ -32,9 +32,9 @@ namespace Owin.Routing
 
 			// TODO support wildcards when needed
 			var template = (
-				from s in urlTemplate.TrimStart('/').Split('/')
+				from s in urlTemplate.Trim('/').Split('/')
 				// TODO support sinatra style '/resources/:id' templates
-				let isVar = s[0] == '{' && s[s.Length - 1] == '}'
+				let isVar = s.Length > 2 && s[0] == '{' && s[s.Length - 1] == '}'
 				select isVar ? new {value = s.Substring(1, s.Length - 2), isVar = true} : new {value = s, isVar = false}
 				).ToArray();
 
@@ -72,7 +72,7 @@ namespace Owin.Routing
 			{
 				if (string.Equals(ctx.Request.Method, method, StringComparison.OrdinalIgnoreCase))
 				{
-					var path = ctx.Request.Path.Value.TrimStart('/');
+					var path = ctx.Request.Path.Value.Trim('/');
 					var data = _matcher(path);
 					if (data != null)
 					{
