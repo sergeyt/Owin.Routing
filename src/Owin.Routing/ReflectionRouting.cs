@@ -36,10 +36,13 @@ namespace Owin.Routing
 			var prefixAttr = type.GetAttribute<RoutePrefixAttribute>();
 			var prefix = prefixAttr != null ? prefixAttr.Prefix : string.Empty;
 
-			var serializerSettings = type.GetProperties(BindingFlags.Static | BindingFlags.Public)
+			var serializerSettings = type.GetProperties(BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.Public)
 				.Where(p => p.HasAttribute<ResponseSerializerSettingsAttribute>() && p.PropertyType == typeof(JsonSerializerSettings))
 				.Select(p => p.GetValue(null) as JsonSerializerSettings)
 				.FirstOrDefault();
+
+			var errorHandler = type.GetMethods(BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.Public)
+				.FirstOrDefault(m => m.HasAttribute<MappingErrorHandlerAttribute>());
 
 			const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 
@@ -59,12 +62,21 @@ namespace Owin.Routing
 
 				app.Route(pattern).Register(verb, async ctx =>
 				{
-					string error;
+					Exception error;
 					var args = MapParameters(ctx, mapper, out error);
 					if (error != null)
 					{
-						ctx.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-						await ctx.WriteJson(new { error });
+						if (null != errorHandler)
+						{
+							var errorResponse = errorHandler.Invoke(null, new object[] { ctx, error });
+							if (null != errorResponse)
+								await ctx.WriteJson(errorResponse);
+						}
+						else
+						{
+							ctx.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+							await ctx.WriteJson(new { error = error.Message });
+						}
 						return;
 					}
 
@@ -107,16 +119,16 @@ namespace Owin.Routing
 			});
 		}
 
-		private static object[] MapParameters(IOwinContext ctx, Func<IOwinContext, object[]> mapper, out string error)
+		private static object[] MapParameters(IOwinContext ctx, Func<IOwinContext, object[]> mapper, out Exception error)
 		{
 			error = null;
 			try
 			{
 				return mapper(ctx);
 			}
-			catch (FormatException e)
+			catch (Exception e)
 			{
-				error = e.Message;
+				error = e;
 				return null;
 			}
 		}

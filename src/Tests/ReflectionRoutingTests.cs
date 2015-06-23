@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Owin;
 using Microsoft.Owin.Testing;
 using Moq;
 using Newtonsoft.Json.Linq;
@@ -71,6 +72,17 @@ namespace Tests
 			}
 		}
 
+		[Test]
+		public async void CheckParameterMappingErrorHandling()
+		{
+			using (var server = TestServer.Create(app => app.UseApi<ApiWithErrorHandler>()))
+			{
+				var s = await server.HttpClient.GetStringAsync("item/abc");
+				var result = JObject.Parse(s);
+				Assert.That(result.Value<string>("customError"), Is.EqualTo("FormatException"));
+			}
+		}
+
 		public class AsyncApi
 		{
 			[Route("items/{key}")]
@@ -99,6 +111,20 @@ namespace Tests
 		internal class Internal
 		{
 			public string Key { get { return "123"; } }
+		}
+
+		public class ApiWithErrorHandler
+		{
+			[Route("item/{number}")]
+			public void GetItem(int number)
+			{
+			}
+
+			[MappingErrorHandler]
+			public static object OnError(IOwinContext ctx, Exception error)
+			{
+				return new {customError = error.GetType().Name};
+			}
 		}
 
 		public interface ILicenseManager
