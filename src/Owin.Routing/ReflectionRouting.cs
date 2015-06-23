@@ -42,7 +42,9 @@ namespace Owin.Routing
 				.FirstOrDefault();
 
 			var errorHandler = type.GetMethods(BindingFlags.Static | BindingFlags.FlattenHierarchy | BindingFlags.Public)
-				.FirstOrDefault(m => m.HasAttribute<MappingErrorHandlerAttribute>());
+				.Where(m => m.HasAttribute<ErrorHandlerAttribute>())
+				.Select(m => DynamicMethods.CompileMethod(type, m))
+				.FirstOrDefault();
 
 			const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 
@@ -68,7 +70,7 @@ namespace Owin.Routing
 					{
 						if (null != errorHandler)
 						{
-							var errorResponse = errorHandler.Invoke(null, new object[] { ctx, error });
+							var errorResponse = errorHandler(null, new object[] { ctx, error });
 							if (null != errorResponse)
 								await ctx.WriteJson(errorResponse);
 						}

@@ -120,7 +120,7 @@ namespace Tests
 			{
 			}
 
-			[MappingErrorHandler]
+			[ErrorHandler]
 			public static object OnError(IOwinContext ctx, Exception error)
 			{
 				return new {customError = error.GetType().Name};

@@ -37,7 +37,7 @@ namespace Owin.Routing
 	/// Defines method to call when parameter mapping failed.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Method)]
-	public class MappingErrorHandlerAttribute : Attribute
+	public class ErrorHandlerAttribute : Attribute
 	{
 	}
 }
