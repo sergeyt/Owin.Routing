@@ -149,7 +149,7 @@ namespace Owin.Routing
 			var target = Expression.Parameter(typeof(object), "target");
 			var args = Expression.Parameter(typeof(object[]), "args");
 
-			var instance = Expression.Convert(target, type);
+			var instance = method.IsStatic ? null : Expression.Convert(target, type);
 			var parameters = method.GetParameters();
 			var callArgs = parameters.Select((p, i) =>
 			{

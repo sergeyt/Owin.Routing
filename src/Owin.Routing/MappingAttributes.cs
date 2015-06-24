@@ -32,4 +32,12 @@ namespace Owin.Routing
 		/// </summary>
 		public string Name { get; private set; }
 	}
+
+	/// <summary>
+	/// Defines method to call when parameter mapping failed.
+	/// </summary>
+	[AttributeUsage(AttributeTargets.Method)]
+	public class ErrorHandlerAttribute : Attribute
+	{
+	}
 }
