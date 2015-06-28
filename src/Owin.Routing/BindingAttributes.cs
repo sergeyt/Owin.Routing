@@ -10,6 +10,9 @@ namespace Owin.Routing
 	{
 	}
 
+	/// <summary>
+	/// Defines binding to request element.
+	/// </summary>
 	public abstract class BindingAttribute : Attribute
 	{
 		protected BindingAttribute(string name = null)
@@ -25,6 +28,9 @@ namespace Owin.Routing
 		internal abstract RequestElement Target { get; }
 	}
 
+	/// <summary>
+	/// Defines binding to route variable.
+	/// </summary>
 	[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
 	public sealed class FromRouteAttribute : BindingAttribute
 	{
@@ -38,6 +44,9 @@ namespace Owin.Routing
 		}
 	}
 
+	/// <summary>
+	/// Defines binding to query string parameter.
+	/// </summary>
 	[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
 	public sealed class FromUriAttribute : BindingAttribute
 	{
@@ -51,6 +60,9 @@ namespace Owin.Routing
 		}
 	}
 
+	/// <summary>
+	/// Defines binding to request header.
+	/// </summary>
 	[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
 	public sealed class FromHeaderAttribute : BindingAttribute
 	{
@@ -64,6 +76,9 @@ namespace Owin.Routing
 		}
 	}
 
+	/// <summary>
+	/// Defines binding to request body property.
+	/// </summary>
 	[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
 	public sealed class FromBodyAttribute : BindingAttribute
 	{
