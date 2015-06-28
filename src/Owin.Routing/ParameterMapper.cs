@@ -64,20 +64,12 @@ namespace Owin.Routing
 				return ctx => ctx.JsonBody().ToObject(type, Json.CreateSerializer());
 			}
 
-			var mapAttribute = parameter.GetAttribute<MapAttribute>();
-			if (null != mapAttribute)
+			var binding = parameter.GetAttribute<BindingAttribute>();
+			if (binding != null)
 			{
-				return ctx => MapParameter(ctx, mapAttribute.Target, mapAttribute.Name ?? parameter.Name, type);
-			}
-
-			var bindings = parameter.GetAttribute<BindingsAttribute>();
-			if (bindings != null)
-			{
-				return ctx =>
-				{
-					var binding = bindings.GetBinding(ctx.Request.Method, parameter.Name);
-					return MapParameter(ctx, binding.Source, binding.Name, type);
-				};
+				var target = binding.Target;
+				var name = binding.Name ?? parameter.Name;
+				return ctx => MapParameter(ctx, target, name, type);
 			}
 
 			if (IsPrimitive(type) || type.IsNullable() && IsPrimitive(Nullable.GetUnderlyingType(type)))

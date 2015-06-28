@@ -19,7 +19,7 @@ namespace Owin.Routing
 			if (type == null) throw new ArgumentNullException("type");
 
 			var ctors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
-			var ctor = ctors.FirstOrDefault(c => c.GetParameters().Any(p => p.HasAttribute<MapAttribute>()));
+			var ctor = ctors.FirstOrDefault(c => c.GetParameters().Any(p => p.HasAttribute<BindingAttribute>()));
 			if (ctor != null)
 			{
 				var args = ParameterMapper.Build(ctor);
@@ -29,11 +29,11 @@ namespace Owin.Routing
 
 			var props = type
 				.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-				.Where(p => p.CanWrite && p.GetIndexParameters().Length == 0 && p.HasAttribute<MapAttribute>())
+				.Where(p => p.CanWrite && p.GetIndexParameters().Length == 0 && p.HasAttribute<BindingAttribute>())
 				.ToArray();
 
 			var fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-				.Where(f => !f.IsLiteral && !f.IsInitOnly && f.HasAttribute<MapAttribute>())
+				.Where(f => !f.IsLiteral && !f.IsInitOnly && f.HasAttribute<BindingAttribute>())
 				.ToArray();
 
 			var setters = props
@@ -56,7 +56,7 @@ namespace Owin.Routing
 
 		private static Action<IOwinContext, object> Setter(MemberInfo member)
 		{
-			var attr = member.GetAttribute<MapAttribute>();
+			var attr = member.GetAttribute<BindingAttribute>();
 			var name = string.IsNullOrEmpty(attr.Name) ? member.Name : attr.Name;
 			var type = member is PropertyInfo ? ((PropertyInfo) member).PropertyType : ((FieldInfo) member).FieldType;
 

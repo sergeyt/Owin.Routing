@@ -3,7 +3,7 @@ namespace Owin.Routing
 	/// <summary>
 	/// Defines elements of HTTP request.
 	/// </summary>
-	public enum RequestElement
+	internal enum RequestElement
 	{
 		/// <summary>
 		/// Specifies that value should be taken from route data.
