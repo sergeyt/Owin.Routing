@@ -2,7 +2,7 @@
 <package>
 	<metadata>
 		<id>Owin.Routing</id>
-		<version>0.7.0.0</version>
+		<version>0.8.0.0</version>
 		<authors>Sergey Todyshev (stodyshev@gmail.com)</authors>
 		<owners>TsvBits</owners>
 		<licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
@@ -12,7 +12,7 @@
 		<copyright>Copyright 2015</copyright>
 		<tags>owin routing</tags>
 		<dependencies>
-			<dependency id="Newtonsoft.Json" version="6.0.5"/>
+			<dependency id="Newtonsoft.Json" version="7.0.1"/>
 			<dependency id="Microsoft.Owin" version="3.0.0"/>
 			<dependency id="Owin" version="1.0"/>
 		</dependencies>
