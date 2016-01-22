@@ -150,5 +150,20 @@ namespace Tests
 				return await response.Content.ReadAsStringAsync();
 			}
 		}
+
+		[TestCase("/docs/tags/1", Result = "specific:tags[1]")]
+		public async Task<string> FromSpecificToGeneral(string path)
+		{
+			using (var server = TestServer.Create(app => app.Route("docs/tags/{id}")
+				.Put(async ctx =>
+				{
+					var id = ctx.GetRouteValue("id");
+					await ctx.Response.WriteAsync(string.Format("specific:tags[{0}]", id));
+				})))
+			{
+				var response = await server.HttpClient.PutAsync(path, new StringContent("test"));
+				return await response.Content.ReadAsStringAsync();
+			}
+		}
     }
 }

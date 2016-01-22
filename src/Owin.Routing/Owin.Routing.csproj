@@ -70,6 +70,7 @@
     <Compile Include="ErrorHandlerAttribute.cs" />
     <Compile Include="BindingAttributes.cs" />
     <Compile Include="HttpMethodAttributes.cs" />
+    <Compile Include="Json.cs" />
     <Compile Include="RequestElement.cs" />
     <Compile Include="RequestMapper.cs" />
     <Compile Include="ParameterMapper.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="RoutingApi.cs" />
     <Compile Include="ResponseSerializerSettingsAttribute.cs" />
     <Compile Include="Tests\ConvertTests.cs" />
+    <Compile Include="Tests\CustomIntJsonConverterTests.cs" />
     <Compile Include="Tests\DependencyInjectionTests.cs" />
     <Compile Include="Tests\DynamicMethodsTests.cs" />
     <Compile Include="Tests\ParameterMapperTests.cs" />
