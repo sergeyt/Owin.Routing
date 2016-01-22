@@ -61,7 +61,10 @@ namespace Owin.Routing
 
 			if (parameter.HasAttribute<MapJsonAttribute>())
 			{
-				return ctx => ctx.JsonBody().ToObject(type, Json.CreateSerializer());
+				var serializer = Json.CreateSerializer();
+				serializer.Converters.Add(new CustomIntJsonConverter());
+
+				return ctx => ctx.JsonBody().ToObject(type, serializer);
 			}
 
 			var binding = parameter.GetAttribute<BindingAttribute>();

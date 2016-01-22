@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,26 +8,6 @@ using Newtonsoft.Json.Linq;
 
 namespace Owin.Routing
 {
-	internal static class Json
-	{
-		public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
-		{
-			TypeNameHandling = TypeNameHandling.Auto
-		};
-
-		public static JsonReader CreateReader(IOwinContext context)
-		{
-			if (context == null) throw new ArgumentNullException("context");
-
-			return new JsonTextReader(new StreamReader(context.Request.Body));
-		}
-
-		public static JsonSerializer CreateSerializer()
-		{
-			return JsonSerializer.CreateDefault(Settings);
-		}
-	}
-
 	/// <summary>
 	/// <see cref="IOwinContext"/> extensions.
 	/// </summary>

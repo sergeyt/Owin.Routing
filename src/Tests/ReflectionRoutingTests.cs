@@ -72,13 +72,24 @@ namespace Tests
 			}
 		}
 
-		[Test]
-		public async void CheckParameterMappingErrorHandling()
+		[TestCase("GET", "item/abc")]
+		[TestCase("PUT", "item/123")]
+		public async void CheckParameterMappingErrorHandling(string method, string path)
 		{
 			using (var server = TestServer.Create(app => app.UseApi<ApiWithErrorHandler>()))
 			{
-				var s = await server.HttpClient.GetStringAsync("item/abc");
-				var result = JObject.Parse(s);
+				string strResponse;
+				if (string.Equals(method, "GET", StringComparison.OrdinalIgnoreCase))
+				{
+					strResponse = await server.HttpClient.GetStringAsync("item/abc");
+				}
+				else
+				{
+					var content = new StringContent(JObject.FromObject(new { name = "TestItem", value = "3.14" }).ToString());
+					var response = await server.HttpClient.PutAsync("item/123", content);
+					strResponse = await response.Content.ReadAsStringAsync();
+				}
+				var result = JObject.Parse(strResponse);
 				Assert.That(result.Value<string>("customError"), Is.EqualTo("FormatException"));
 			}
 		}
@@ -113,10 +124,16 @@ namespace Tests
 			public string Key { get { return "123"; } }
 		}
 
-		public class ApiWithErrorHandler
+		internal class ApiWithErrorHandler
 		{
 			[Route("item/{number}")]
 			public void GetItem(int number)
+			{
+			}
+
+			[Route("item/{number}")]
+			[HttpPut]
+			public void UpdateItem(int number, [MapJson]Item item)
 			{
 			}
 
@@ -124,6 +141,12 @@ namespace Tests
 			public static object OnError(IOwinContext ctx, Exception error)
 			{
 				return new {customError = error.GetType().Name};
+			}
+
+			internal class Item
+			{
+				public string Name { get; set; }
+				public int? Value { get; set; }
 			}
 		}
 
