@@ -29,6 +29,15 @@ namespace Owin.Routing
 			return new RouteBuilder(app, urlTemplate);
 		}
 
+		/// <summary>
+		/// Injects route to app pipeline.
+		/// </summary>
+		/// <param name="app">The instance of <see cref="IAppBuilder"/>.</param>
+		public static MapRouteBuilder Route(this IAppBuilder app)
+		{
+			return new MapRouteBuilder(app);
+		}
+
 		#region Shortcuts
 
 		/// <summary>
