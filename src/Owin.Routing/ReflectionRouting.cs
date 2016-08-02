@@ -29,6 +29,24 @@ namespace Owin.Routing
 		/// <param name="getInstance">Function to get instance of T.</param>
 		public static IAppBuilder UseApi<T>(this IAppBuilder app, Func<IOwinContext, T> getInstance)
 		{
+			var routeBuilder = app.Route();
+			return app.UseApi(getInstance, routeBuilder);
+		}
+
+		/// <summary>
+		/// Registers methods annotated with <see cref="RouteAttribute"/> into routing pipeline.
+		/// </summary>
+		/// <typeparam name="T">Type to reflect.</typeparam>
+		/// <param name="routeBuilder">The fluent API to register http method handlers.</param>
+		public static MapRouteBuilder UseApi<T>(this MapRouteBuilder routeBuilder)
+		{
+			var init = DependencyInjection.CompileInitializer<T>();
+			routeBuilder.App.UseApi(init, routeBuilder);
+			return routeBuilder;
+		}
+
+		private static IAppBuilder UseApi<T>(this IAppBuilder app, Func<IOwinContext, T> getInstance, MapRouteBuilder mapRouteBuilder)
+		{
 			if (app == null) throw new ArgumentNullException("app");
 			if (getInstance == null) throw new ArgumentNullException("getInstance");
 
@@ -49,20 +67,20 @@ namespace Owin.Routing
 			const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 
 			var actions = (from m in type.GetMethods(bindingFlags)
-				let route = m.GetAttribute<RouteAttribute>()
-				where route != null
-				select new {Method = m, Route = route}).ToList();
+						   let route = m.GetAttribute<RouteAttribute>()
+						   where route != null
+						   select new { Method = m, Route = route }).ToList();
 
 			actions.ForEach(a =>
 			{
 				var invoke = DynamicMethods.CompileMethod(type, a.Method);
 				var mapper = ParameterMapper.Build(a.Method);
 				var returnType = a.Method.ReturnType;
-				
+
 				var verb = GetHttpMethod(a.Method);
 				var pattern = AddPrefix(prefix, a.Route.Template);
 
-				app.Route(pattern).Register(verb, async ctx =>
+				mapRouteBuilder.Register(pattern, verb, async ctx =>
 				{
 					Exception error;
 					var args = MapParameters(ctx, mapper, out error);
@@ -82,7 +100,7 @@ namespace Owin.Routing
 						return;
 					}
 
-					var instance = a.Method.IsStatic ? (object) null : getInstance(ctx);
+					var instance = a.Method.IsStatic ? (object)null : getInstance(ctx);
 					var result = invoke(instance, args);
 
 					var task = result as Task;
@@ -96,6 +114,15 @@ namespace Owin.Routing
 						await ctx.WriteJson(result, serializerSettings);
 					}
 				});
+			});
+
+			app.Use(async (ctx, next) =>
+			{
+				var handler = mapRouteBuilder.GetHandler(ctx);
+				if (handler != null)
+					await handler(ctx);
+				else
+					await next();
 			});
 
 			return app;
