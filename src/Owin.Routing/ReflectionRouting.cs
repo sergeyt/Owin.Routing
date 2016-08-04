@@ -29,8 +29,7 @@ namespace Owin.Routing
 		/// <param name="getInstance">Function to get instance of T.</param>
 		public static IAppBuilder UseApi<T>(this IAppBuilder app, Func<IOwinContext, T> getInstance)
 		{
-			var routeBuilder = app.Route();
-			return app.UseApi(getInstance, routeBuilder);
+			return app.Route(route => route.UseApi(getInstance));
 		}
 
 		/// <summary>
@@ -41,13 +40,11 @@ namespace Owin.Routing
 		public static MapRouteBuilder UseApi<T>(this MapRouteBuilder routeBuilder)
 		{
 			var init = DependencyInjection.CompileInitializer<T>();
-			routeBuilder.App.UseApi(init, routeBuilder);
-			return routeBuilder;
+			return routeBuilder.UseApi(init);			
 		}
 
-		private static IAppBuilder UseApi<T>(this IAppBuilder app, Func<IOwinContext, T> getInstance, MapRouteBuilder mapRouteBuilder)
+		private static MapRouteBuilder UseApi<T>(this MapRouteBuilder mapRouteBuilder, Func<IOwinContext, T> getInstance)
 		{
-			if (app == null) throw new ArgumentNullException("app");
 			if (getInstance == null) throw new ArgumentNullException("getInstance");
 
 			var type = typeof(T);
@@ -116,6 +113,11 @@ namespace Owin.Routing
 				});
 			});
 
+			return mapRouteBuilder;
+		}
+
+		private static IAppBuilder UseRoute(this IAppBuilder app, MapRouteBuilder mapRouteBuilder)
+		{
 			app.Use(async (ctx, next) =>
 			{
 				var handler = mapRouteBuilder.GetHandler(ctx);
@@ -125,7 +127,7 @@ namespace Owin.Routing
 					await next();
 			});
 
-			return app;
+			return app;			
 		}
 
 		private static async Task<object> HandleAsyncResult(Task task, Type taskType)

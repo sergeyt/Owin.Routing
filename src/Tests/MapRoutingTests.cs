@@ -13,7 +13,7 @@ namespace Tests
 		[Test]
 		public async void CheckAsyncMethod()
 		{
-			using (var server = TestServer.Create(app => app.Route().UseApi<ReflectionRoutingTests.AsyncApi>()))
+			using (var server = TestServer.Create(app => app.Route(r => r.UseApi<ReflectionRoutingTests.AsyncApi>())))
 			{
 				var s = await server.HttpClient.GetStringAsync("items/123");
 				Assert.AreEqual("\"123\"", s);
@@ -24,7 +24,7 @@ namespace Tests
 		[TestCase("array", @"[{""Key"":""123""}]")]
 		public async void CheckAsyncMethodInternalApi(string path, string expected)
 		{
-			using (var server = TestServer.Create(app => app.Route().UseApi<ReflectionRoutingTests.InternalAsyncApi>()))
+			using (var server = TestServer.Create(app => app.Route(r => r.UseApi<ReflectionRoutingTests.InternalAsyncApi>())))
 			{
 				var s = await server.HttpClient.GetStringAsync(path);
 				Assert.AreEqual(expected, s);
@@ -35,7 +35,7 @@ namespace Tests
 		[TestCase("PUT", "item/123")]
 		public async void CheckParameterMappingErrorHandling(string method, string path)
 		{
-			using (var server = TestServer.Create(app => app.Route().UseApi<ReflectionRoutingTests.ApiWithErrorHandler>()))
+			using (var server = TestServer.Create(app => app.Route(r => r.UseApi<ReflectionRoutingTests.ApiWithErrorHandler>())))
 			{
 				string strResponse;
 				if (string.Equals(method, "GET", StringComparison.OrdinalIgnoreCase))
